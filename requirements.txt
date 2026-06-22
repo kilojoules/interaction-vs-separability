@@ -1,0 +1,8 @@
+# First-order analysis (experiments e2, e4, e5) -- any recent python:
+numpy
+torch>=2.2,<2.6
+scikit-learn
+matplotlib
+# Real APD/SPD (experiment e1, e3) -- requires the ApolloResearch `spd` package
+# (https://github.com/ApolloResearch/apd), python>=3.11. Install in a separate env:
+#   git clone https://github.com/ApolloResearch/apd && cd apd && pip install -e .
