@@ -6,14 +6,17 @@ truth**, not scale. Nothing here demonstrates behavior in real LLMs.
 
 **The order-3 model is dedicated *by construction*.** `order3_pinwheel.pt` was
 built with a decoupled, country-dedicated phase bank (block-diagonal). So its
-*component dedication* (country components not serving other features) is partly
-an artifact of construction, not an emergent property. Task 2 addresses this:
-ordinary dense from-scratch training does **not** reach a clean cubic (it plateaus
-at a partial, more-linear, more-separable code), so the clean-cubic regime in our
-experiments is reachable mainly by construction. The architecture-**independent**
-results are *first-order blindness* and *rank inflation*, which follow from the
-cubic code geometry; *dedication* is not claimed to be architecture-independent.
-(See FINDINGS Task 2 for the exact AUC/dedication numbers.)
+*component dedication* and its high cross-seed MMCS are partly construction
+artifacts, not emergent properties. Task 2 partially de-confounds this: a
+non-dedicated, from-scratch homogeneous-cubic model (`e2b`, AUC 0.979) reproduces
+**rank inflation** (24 nonlinear units vs ~6 for a linear feature), so inflation
+is architecture-independent. But **first-order blindness does NOT transfer**: the
+homogeneous cubic is fully first-order-recoverable (`<r,L>`=0.979), while the
+constructed `sin3θ` phase code is blind (0.53). Blindness is therefore a property
+of the *phase/periodic encoding geometry*, not of interaction order or of any
+particular architecture — and the phase regime did not emerge from ordinary SGD
+at all (order-3 `sin3θ` plateaued at 0.795, order-4 at 0.565). See FINDINGS
+Task 2 for numbers.
 
 **"Reconstruction" of the first-order reader uses privileged information.** The
 rank-K reader-subspace reconstruction is computed *with* the per-input model

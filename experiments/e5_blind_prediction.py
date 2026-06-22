@@ -117,7 +117,8 @@ def main():
         results["measured"][kind] = m
         print(f"\n[{kind}]  (target fit AUC {m['country_target_auc']:.3f})")
         for k, v in m.items():
-            if k != "country_target_auc": print(f"    {k:<28} {v:.3f}")
+            if k == "country_target_auc": continue
+            print(f"    {k:<28} {v:.3f}" if isinstance(v, (int, float)) else f"    {k:<28} {v}")
     (out / "blind_prediction.json").write_text(json.dumps(results, indent=2))
     print(f"\nsaved {out/'blind_prediction.json'}")
 

@@ -1,0 +1,32 @@
+{
+  "order1_vanilla": {
+    "country_auc_target": 0.9996088777636342,
+    "country_auc_spd": 0.9996070999352871,
+    "recon_rel": 0.0018311902421768395,
+    "C_alive": 40,
+    "n_country_components": 8,
+    "n_country_dominant": 13,
+    "monosemanticity": 0.20601601307058898,
+    "seed_mmcs": 0.16030697524547577
+  },
+  "order2_model": {
+    "country_auc_target": 0.99380782386699,
+    "country_auc_spd": 0.9929651332304563,
+    "recon_rel": 0.006727934053438925,
+    "C_alive": 40,
+    "n_country_components": 8,
+    "n_country_dominant": 5,
+    "monosemanticity": 0.21422277379468918,
+    "seed_mmcs": 0.20558404922485352
+  },
+  "order3_pinwheel": {
+    "country_auc_target": 0.9786269476109543,
+    "country_auc_spd": 0.9492163332645907,
+    "recon_rel": 0.008187939066054431,
+    "C_alive": 40,
+    "n_country_components": 6,
+    "n_country_dominant": 38,
+    "monosemanticity": 0.7027298366496662,
+    "seed_mmcs": 0.7432154417037964
+  }
+}

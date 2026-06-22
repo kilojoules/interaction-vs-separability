@@ -1,0 +1,53 @@
+{
+  "order1_vanilla": {
+    "country": {
+      "single_best_unit_auc": 0.9247658600066846,
+      "fixed_probe_auc": 0.9996260158823107,
+      "unit_recon_K2": 0.8608440417860774,
+      "unit_recon_K6": 0.9969848031232889,
+      "unit_recon_K64": 0.9996088777636342,
+      "units_for_auc95": 6,
+      "gap_nongrad_K6": 0.07221894311660426,
+      "reader_pca_recon_full": 0.9996070999352871,
+      "reader_alignment": 0.9851900409979674
+    },
+    "linear_control_number": {
+      "single_best_unit_auc": 0.9893277863555784,
+      "fixed_probe_auc": 0.9959644101363596
+    }
+  },
+  "order2_model": {
+    "country": {
+      "single_best_unit_auc": 0.5955244949189666,
+      "fixed_probe_auc": 0.5197227154078853,
+      "unit_recon_K2": 0.5326213723412577,
+      "unit_recon_K6": 0.9617020217463963,
+      "unit_recon_K64": 0.99380782386699,
+      "units_for_auc95": 6,
+      "gap_nongrad_K6": 0.36617752682742966,
+      "reader_pca_recon_full": 0.9417565655200859,
+      "reader_alignment": 0.5442283077021233
+    },
+    "linear_control_number": {
+      "single_best_unit_auc": 0.9824994996282953,
+      "fixed_probe_auc": 0.9973295644657604
+    }
+  },
+  "order3_pinwheel": {
+    "country": {
+      "single_best_unit_auc": 0.563146685061264,
+      "fixed_probe_auc": 0.5507830538762237,
+      "unit_recon_K2": 0.523767787172613,
+      "unit_recon_K6": 0.5305377575184361,
+      "unit_recon_K64": 0.9786269476109543,
+      "units_for_auc95": 32,
+      "gap_nongrad_K6": -0.03260892754282785,
+      "reader_pca_recon_full": 0.5337147367747349,
+      "reader_alignment": 0.12663239655873426
+    },
+    "linear_control_number": {
+      "single_best_unit_auc": 0.9959988134042431,
+      "fixed_probe_auc": 0.996288977115434
+    }
+  }
+}

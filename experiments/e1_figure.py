@@ -67,12 +67,20 @@ def main():
     labels = [lab for _, lab in ORDERS]; x = np.arange(3)
 
     ax = fig.add_subplot(gs[0, 0])
-    ncc = [summary[k]["n_country_components"] for k, _ in ORDERS]
-    ax.bar(x, ncc, color=["#1a7a4a", "#e08a1e", "#6a1b9a"])
-    for i, v in enumerate(ncc): ax.text(i, v + 0.1, str(v), ha="center", fontsize=10)
-    ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=8.5)
-    ax.set_ylabel("# SPD components serving country")
-    ax.set_title("Rank inflation (APD components)")
+    cc, lc = [], []
+    for k, _ in ORDERS:
+        npf = data[k]["summary"]["n_components_per_feature"]
+        cc.append(npf["country"])
+        lc.append(np.mean([npf[f] for f in FEATS if f != "country"]))
+    w = 0.38
+    ax.bar(x - w / 2, lc, w, color="#9aa0a6", label="mean linear feature")
+    ax.bar(x + w / 2, cc, w, color="#6a1b9a", label="country")
+    for i in range(3):
+        ax.text(i + w / 2, cc[i] + 0.15, f"{cc[i]/max(lc[i],1e-9):.1f}x", ha="center", fontsize=9)
+    ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=8.5); ax.set_ylim(0, 10)
+    ax.set_ylabel("# SPD components serving feature")
+    ax.set_title("Rank inflation: country vs linear")
+    ax.legend(fontsize=7.5, loc="upper center", ncol=2, framealpha=0.9)
 
     ax = fig.add_subplot(gs[0, 1])
     at = [summary[k]["country_auc_target"] for k, _ in ORDERS]

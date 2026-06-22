@@ -1,0 +1,40 @@
+{
+  "predictions": {
+    "order2_xor_number_color": {
+      "single_best_unit_auc": "<=0.7 (marginally non-separable)",
+      "fixed_probe_auc": "~0.5 (chance)",
+      "gap_nongrad_K6": "0.30-0.45",
+      "nonlinear_units_for_auc95": "<=8 (few)",
+      "within_cell_alignment": "HIGH (>0.8) -> conditional separability restored",
+      "first_order_recon_full": ">0.9 (locally linear; reader rotates between 2 gate states)"
+    },
+    "order4_sin4theta": {
+      "first_order_recon_full": "~0.5 (BLIND, <= order-3's 0.53)",
+      "reader_alignment": "<0.13 (below order-3)",
+      "nonlinear_units_for_auc95": ">=32 (>= order-3)",
+      "within_cell_alignment": "stays LOW (self-interaction, not restored by conditioning)"
+    }
+  },
+  "measured": {
+    "order2_xor_number_color": {
+      "country_target_auc": 0.9900109605420486,
+      "single_best_unit_auc": 0.6612925610658771,
+      "fixed_probe_auc": 0.8689574491745914,
+      "gap_nongrad_K6": 0.32442670671297624,
+      "nonlinear_units_for_auc95": 4,
+      "reader_alignment": 0.08424976105655302,
+      "first_order_recon_full": 0.9900056226157262,
+      "within_cell_alignment": 0.6172269667136681
+    },
+    "order4_sin4theta": {
+      "country_target_auc": 0.5653761792012296,
+      "single_best_unit_auc": 0.5423569615344248,
+      "fixed_probe_auc": 0.5534358544546547,
+      "gap_nongrad_K6": -0.028919893478303482,
+      "nonlinear_units_for_auc95": null,
+      "reader_alignment": 0.9758784100150516,
+      "first_order_recon_full": 0.5660699577862415,
+      "within_cell_alignment": 0.9778849268305448
+    }
+  }
+}
