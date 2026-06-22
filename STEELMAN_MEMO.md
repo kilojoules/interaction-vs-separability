@@ -6,11 +6,11 @@ written from.
 
 | # | task | verdict | one-line outcome |
 |---|------|---------|------------------|
-| 1 | run the real APD/SPD solver | **STRENGTHENED** | Solver is faithful on all 3 readouts; country's component share rises with order — 2× a linear feature and 38/40 components at order-3 (rank inflation, real). |
+| 1 | run the real APD/SPD solver | **STRENGTHENED (numbers being pinned)** | Solver faithful on all 3 readouts. At order-3, two distinct metrics: country has **2×** the *substantial-contributor* components of a linear feature (serves 6 vs 3) and is the argmax of **38/40** components — but reconstructs to 95% fidelity from only **~6** (recon-95), so the 38 is a redundant tail, not genuine need. Budget sweep (C=80/120, 2 seeds) running to settle plateau-vs-saturation. |
 | 2 | kill the by-construction confound | **SPLIT: inflation STRENGTHENED, blindness REFUTED-as-stated** | Inflation appears in a non-dedicated from-scratch cubic (24 units). But a homogeneous cubic `a³−3ab²` (AUC 0.979) is **not** first-order-blind, while `sin3θ` is — so blindness is a *phase-geometry* property, not an order property. |
 | 3 | minimality/simplicity tradeoff | **DROPPED (no tension found)** | Faithfulness is flat across a 100× minimality sweep; component count varies modestly. The asserted tension does not appear — framing removed. |
 | 4 | non-gradient / non-PCA metric | **SURVIVED** | The order-2 dissociation reproduces with single-unit vs causal-units (no grad/PCA): gap 0.37 vs original 0.44. |
-| 5 | blind prediction on a new order | **MIXED** | Order-2 XOR on a new pair: dissociation confirmed (gap 0.32, 4 units), but the gate was *softer* than predicted (probe 0.87, partial conditional restore). Order-4 `sin4θ`: untestable — SGD couldn't train it (0.565), corroborating Task 2. |
+| 5 | blind prediction on a new order | **MIXED** | Order-2 XOR on a new pair: predicted dissociation *appeared but attenuated* — direction right (gap 0.32, 4 units, reader rotates) yet weaker than predicted (probe 0.87 not ≈chance, conditional restore only 0.62). Order-4 `sin4θ`: untestable — SGD couldn't train it (0.565), corroborating Task 2. |
 
 ## What changed because of the attack
 

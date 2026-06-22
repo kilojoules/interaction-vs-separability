@@ -105,13 +105,19 @@ components succeed) reproduces with a gradient-free, PCA-free construction
 
 | structure (target AUC) | prediction | measured | verdict |
 |---|---|---|---|
-| order-2 XOR `number⊕color` (0.99) | gap 0.3–0.45; few units; conditional-restored | gap **0.32**, units **4**, reader-align 0.08, first-order 0.99 (locally linear), within-cell align **0.62** | **mostly right** — dissociation structure confirmed; "fixed probe ≈ chance / full conditional restore" was too strong (probe 0.87, within-cell 0.62 → *softer* gate) |
-| order-4 `sign(sin4θ)` (**0.565**) | more blind than order-3 | model **failed to train** (AUC 0.565) | **untestable** — but consistent with Task 2: SGD does not reach high-order phase codes |
+| order-2 XOR `number⊕color` (0.99) | fixed probe ≈ chance; gap 0.3–0.45; few units; conditional restore HIGH | gap **0.32**, units **4**, reader-align 0.08, first-order 0.99 (locally linear), probe **0.87**, within-cell align **0.62** | **partial — weaker than predicted** |
+| order-4 `sign(sin4θ)` (**0.565**) | more blind than order-3 | model **failed to train** (AUC 0.565) | **untestable** |
 
-The order-2 prediction broadly held (the gated dissociation generalizes to a new
-feature pair). The order-4 prediction could not be tested because a clean order-4
-phase code does not emerge from ordinary training — itself corroborating the
-Task-2 bound.
+**The order-2 prediction's qualitative shape appeared but weaker than expected.**
+The dissociation direction was right (a single fixed component is far worse than a
+few recombined ones; the reader rotates; the logit is locally linear), but the
+*magnitudes* missed: we predicted the fixed probe ≈ chance and a near-full
+conditional restore, and got a probe of 0.87 and only a partial within-cell
+restore (0.62) — i.e. this held-out gate is **softer / more linearly-leaky** than
+the original `food⊕sentiment` gate. So this is a *predicted dissociation that
+showed up attenuated*, not a clean confirmation. The order-4 prediction could not
+be tested at all, because a clean order-4 phase code does not emerge from ordinary
+training (AUC 0.565) — which separately corroborates the Task-2 bound.
 
 ---
 

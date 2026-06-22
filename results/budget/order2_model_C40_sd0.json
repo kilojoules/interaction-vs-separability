@@ -1,0 +1,15 @@
+{
+  "C": 40,
+  "C_alive": 40,
+  "country_auc_target": 0.99380782386699,
+  "country_auc_spd": 0.9929651332304563,
+  "recon_rel": 0.006727934053438925,
+  "serves_country": 8,
+  "serves_linear_mean": 8.142857142857142,
+  "dominant_country": 5,
+  "dominant_linear_sum": 35,
+  "recon_k95": 7,
+  "recon_full_auc": 0.9929651332304563,
+  "model_key": "order2_model",
+  "seed": 0
+}

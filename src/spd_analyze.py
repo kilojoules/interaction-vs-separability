@@ -74,6 +74,55 @@ def mmcs(va, va2):
     return float(0.5 * (S.max(axis=1).mean() + S.max(axis=0).mean()))
 
 
+def dominant_per_feature(eff, norms, alive_frac=0.02):
+    """# components whose argmax output (largest ablation effect) is each feature."""
+    alive = norms > alive_frac * norms.max()
+    dom = eff.argmax(axis=1)
+    return {FEATS[g]: int(((dom == g) & alive).sum()) for g in range(8)}
+
+
+def country_recon_curve(spd, X, y, eff=None, ci=CI, thresh=0.95, batch=2000):
+    """Budget-robust 'how many components does country need': greedily keep the
+    top-k components ranked by their causal effect on the country logit, measure
+    country AUC, and report the smallest k reaching `thresh` x full-model AUC.
+    Returns (auc_at_k list, k95, full_auc)."""
+    if eff is None:
+        eff = ablation_effect_matrix(spd, X, batch)
+    order = np.argsort(-eff[:, ci])
+    Xb = X[:batch]; C = spd.C; aucs = []
+    for k in range(1, C + 1):
+        mask = torch.zeros(Xb.shape[0], spd.n_instances, C, dtype=torch.bool)
+        mask[:, :, order[:k]] = True
+        with torch.no_grad():
+            z = spd(Xb, topk_mask=mask).squeeze(1).numpy()[:, ci]
+        aucs.append(auc(z, y[:batch]))
+    full = aucs[-1]
+    k95 = next((k for k, a in enumerate(aucs, 1) if a >= thresh * full), C)
+    return aucs, int(k95), float(full)
+
+
+def budget_report(spd, target, X, y, ci=CI):
+    """Uniform per-budget analysis used for the C-sweep (Tasks: rank-inflation)."""
+    faith = faithfulness(spd, target, X, y)
+    eff = ablation_effect_matrix(spd, X)
+    norms = component_norms(spd)
+    summ = summarize_components(eff, norms)
+    dom = dominant_per_feature(eff, norms)
+    aucs, k95, full = country_recon_curve(spd, X, y[:, ci], eff=eff)
+    lin = [summ["n_components_per_feature"][f] for f in FEATS if f != "country"]
+    return {
+        "C": spd.C, "C_alive": summ["C_alive"],
+        "country_auc_target": faith["per_feature_auc"]["country"]["target"],
+        "country_auc_spd": faith["per_feature_auc"]["country"]["spd_full"],
+        "recon_rel": faith["recon_rel"],
+        "serves_country": summ["n_components_per_feature"]["country"],
+        "serves_linear_mean": float(np.mean(lin)),
+        "dominant_country": dom["country"],
+        "dominant_linear_sum": int(sum(v for f, v in dom.items() if f != "country")),
+        "recon_k95": k95, "recon_full_auc": full,
+    }
+
+
 def summarize_components(eff, norms, alive_frac=0.02, share=0.1):
     """From the (C,8) effect matrix + norms, derive separability descriptors.
 
