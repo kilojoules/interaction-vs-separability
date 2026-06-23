@@ -43,6 +43,37 @@ target + SPD twin (each weight = Σ_C A_cB_c) and decomposed with the real
   orders 1–2 (C=40 ≫ ~8 mechanisms → interchangeable fragments). We do **not**
   claim a stability degradation.
 
+### Budget sweep (C = 40 / 80 / 120, 2 seeds each) — `figs/spd_budget_sweep.png`
+
+The "2× / 38-of-40" headline above mixes two metrics; the budget sweep pins what
+is real. (Seed means shown; full per-seed table in `results/budget/`.)
+
+| metric | order-2 gated (C=40→80→120) | order-3 cubic (C=40→80→120) |
+|---|---|---|
+| **recon-95** (components to reconstruct country to 95% of full AUC) | 5.5 → 6.5 → 6.5 | 5.5 → 6.5 → 4.5 |
+| **dominant** count (argmax output = country) | 5.5 → 12 → 18.5 (~15% of C) | 38 → 78.5 → 120 (**95–100% of C**) |
+| country AUC (SPD faithfulness) | 0.99 → 0.99 → 0.99 | 0.95 → 0.74–0.87 → 0.66–0.78 |
+
+- **Genuine need plateaus.** recon-95 is flat at ~5–6 components for *both* orders,
+  budget-independent — so by the reconstruction metric there is **no inflation**
+  between order-2 and order-3; country reconstructs from a small bounded core.
+- **The order-3 effect is *saturation*, not a higher fixed count.** The
+  country-*dominant* count tracks the budget ceiling at order-3 (95–100% of C) but
+  stays a low fraction (~15%) at order-2: the attribution decomposition never
+  resolves the cubic feature into a bounded set of dominant components — it smears
+  it across whatever budget it is given.
+- **Faithfulness caveat.** order-3 SPD degrades at higher C within 10k steps
+  (country AUC 0.95→0.66–0.87); order-2 stays faithful. Saturation is **not merely
+  underfitting** — it is already visible at the faithful C=40 point (38/40 = 95%
+  at country AUC 0.95) and in both seeds (38/38, 79/78, 120/120).
+- **Seeds.** recon-95 stable to ±1–2; order-3 dominant saturates in both seeds;
+  order-2 dominant noisier but always a low budget fraction.
+
+**Claim wording for Task 1 is deliberately left for review** — the data support
+"order-3 is never cleanly resolved (saturates the budget)" rather than "needs a
+higher fixed number of components," and the original "2× rank inflation" line is
+metric-fragile. Final phrasing pending.
+
 ## Task 2 — kill the by-construction confound · **the key correction**
 
 Ordinary dense Heads trained from scratch (no decoupling) on a cubic country
