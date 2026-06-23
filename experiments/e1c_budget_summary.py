@@ -70,9 +70,9 @@ def main():
     axes[2].axhline(1, color="k", ls=":", lw=1, alpha=0.5)
     for ax in axes:
         ax.set_xlabel("budget C (total components)"); ax.grid(alpha=0.25); ax.legend(fontsize=7.5)
-    fig.suptitle("Saturation is specific to PHASE geometry: the phase cubic tracks the budget (redundancy 8–30×); "
-                 "a polynomial cubic of the same degree resolves (≈0×), like the gate",
-                 fontsize=10.5)
+    fig.suptitle("CONFOUNDED METRIC (withdrawn, kept for completeness): the 'dominant = argmax-over-8-outputs' count is\n"
+                 "driven by readout composition, not geometry. See figs/spd_country_only.png for the confound-free result.",
+                 fontsize=10)
     fig.tight_layout(rect=[0, 0, 1, 0.95])
     fig.savefig(ROOT / "figs" / "spd_budget_sweep.png", dpi=140, bbox_inches="tight")
     print("saved figs/spd_budget_sweep.png")

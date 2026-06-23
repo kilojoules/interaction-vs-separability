@@ -18,7 +18,7 @@ claims survive the real solver and honest de-confounding.
 
 ---
 
-## Task 1 — run the actual APD/SPD solver · **REFRAMED: budget saturation, not cost inflation**
+## Task 1 — run the actual APD/SPD solver · **REVISED: no decomposition-axis effect (saturation withdrawn)**
 
 Each readout (`layers[6:]`, `L→64→ReLU→8`) was wrapped as an ApolloResearch `spd`
 target + SPD twin (each weight = Σ_C A_cB_c) and decomposed with the real
@@ -33,90 +33,75 @@ target + SPD twin (each weight = Σ_C A_cB_c) and decomposed with the real
 
 - The solver **reaches faithfulness on all three readouts** — this is about how the
   computation is decomposed, not feasibility. (Closes the fallback gap.)
-- **The C=40 snapshot is metric-fragile.** It *looks* like inflation (country is
-  the argmax of 38/40 components and has 2× the "serves" count of a linear
-  feature), but those two numbers are different metrics, and the budget sweep
-  below shows the effect is **budget saturation of the attribution/selection step,
-  not a higher reconstruction cost.** The held claim is stated under the sweep.
+- **The C=40 snapshot is metric-fragile — and the metric that looked dramatic is
+  confounded.** It *looks* like inflation (country is the argmax of 38/40
+  components, "2×" the serves of a linear feature), but "dominant = argmax over 8
+  outputs" is confounded by readout composition, and a confound-free re-test
+  (below) shows **no saturation and no inflation** on the decomposition axis. The
+  held claim is stated under the sweep.
 - **MMCS wrinkle (honest):** order-3 components are *more* cross-seed reproducible
   (0.74) than order-1/2 (0.16–0.21). This is **not** "higher order = less stable";
   it reflects (a) order-3's dedicated phase bank and (b) over-decomposition at
   orders 1–2 (C=40 ≫ ~8 mechanisms → interchangeable fragments). We do **not**
   claim a stability degradation.
 
-### Budget sweep (C = 40 / 80 / 120, 2 seeds each) — `figs/spd_budget_sweep.png`
+### Budget sweep — and a confound that withdraws the saturation claim
 
-The "2× / 38-of-40" headline above mixes two metrics; the budget sweep pins what
-is real. (Seed means shown; full per-seed table in `results/budget/`.)
+We first measured a "country-dominant" component count (argmax output = country)
+and found it tracked the budget at order-3 (38→79→120 of C, "95–100%") vs ~15% for
+the gate, and built a "redundancy" story (dominant ÷ recon-95) on top of it. **That
+result is withdrawn.** The `dominant = argmax-over-8-outputs` metric is confounded
+by **readout composition**: the pinwheel readout is *mostly country by
+construction* (it is almost all phase-bank), so nearly every component affects
+country more than any other feature — even components with *negligible* country
+effect (hence dominant=120 while recon-95=4: ~115 components are redundant *for
+country* but still argmax-country). The polynomial control "confirming"
+phase-specificity (e2b dominant≈0) was the same artifact in reverse: e2b is a
+*balanced* head where country is ≈1/8 of the readout. So that comparison measured
+readout composition, not geometry.
 
-| metric | order-2 gated (C=40→80→120) | order-3 cubic (C=40→80→120) |
-|---|---|---|
-| **recon-95** (components to reconstruct country to 95% of full AUC) | 5.5 → 6.5 → 6.5 | 5.5 → 6.5 → 4.5 |
-| **dominant** count (argmax output = country) | 5.5 → 12 → 18.5 (~15% of C) | 38 → 78.5 → 120 (**95–100% of C**) |
-| country AUC (SPD faithfulness) | 0.99 → 0.99 → 0.99 | 0.95 → 0.74–0.87 → 0.66–0.78 |
+**Confound-free re-test (`experiments/e1f_country_only.py`, `figs/spd_country_only.png`).**
+We decomposed the **country-only readout** (64→64→1, a single output, so "dominant"
+cannot even be defined) and measured a threshold-free spread metric: the
+participation ratio **PR** of the per-component causal country effect (effective
+number of components carrying country). Does PR track the budget (saturation) or
+plateau (bounded)?
 
-- **Genuine need plateaus.** recon-95 is flat at ~5–6 components for *both* orders,
-  budget-independent — so by the reconstruction metric there is **no inflation**
-  between order-2 and order-3; country reconstructs from a small bounded core.
-- **The order-3 effect is *saturation*, not a higher fixed count.** The
-  country-*dominant* count tracks the budget ceiling at order-3 (95–100% of C) but
-  stays a low fraction (~15%) at order-2: the attribution decomposition never
-  resolves the cubic feature into a bounded set of dominant components — it smears
-  it across whatever budget it is given.
-- **Saturation is specific to PHASE geometry — now tested, not inferred.** We ran
-  the real solver on a *non-dedicated, from-scratch* homogeneous-cubic model (e2b,
-  `a³−3ab²`, same degree-3 as the pinwheel, matched accuracy). The
-  confound-resistant metric is **redundancy = dominant ÷ recon-95** (country-
-  dominant components beyond the ~6 genuinely needed), which removes the
-  readout-composition confound (country's share of the readout). Across
-  C = 40/80/120:
+| effective components PR | C=40 | C=80 | C=120 | faithful? |
+|---|---|---|---|---|
+| order-2 gate | 7.1 | 11.9 | 12.5 | ✓ (0.99) |
+| order-3 **phase** `sin3θ` | 10.8 | 17.4 | 16.5 | ✗ (0.90 → 0.68) |
+| order-3 **polynomial** `a³−3ab²` | 7.7 | 7.6 | 9.0 | ✓ (0.98) |
 
-  | redundancy | C=40 | C=80 | C=120 | country AUC |
-  |---|---|---|---|---|
-  | order-2 gate | 1.1 | 1.9 | 2.8 | 0.99 |
-  | order-3 **phase** `sin3θ` | 7.0 | 12.7 | **27** | 0.95→0.66 |
-  | order-3 **polynomial** `a³−3ab²` | 0.0 | 0.1 | **0.3** | 0.98 throughout |
+- **No saturation.** PR **plateaus far below the budget ceiling** for all three —
+  PR/C *declines* in every case (gate 0.18→0.10, phase 0.27→0.14, poly 0.19→0.07).
+  Country resolves into a bounded set everywhere; recon-95 is ~2–7. The
+  "saturation" was entirely the cross-feature/readout-composition artifact above.
+- **A modest, bounded dimensionality difference remains:** the phase code spans
+  somewhat more components (PR ~11–17) than the polynomial (~8) or gate (~12) — but
+  bounded, not budget-tracking, and partly confounded by the phase faithfulness
+  ceiling.
+- **The phase code uniquely resists faithful high-budget decomposition** (country
+  AUC 0.68 at C=80 vs ~0.98 for gate/polynomial) — a real, separate phenomenon
+  (also seen earlier and unmovable by steps or minimality), which limits how
+  cleanly the high-C phase PR can be read.
 
-  The polynomial cubic **resolves completely** (redundancy ≈0, even below the gate)
-  and stays faithful at every budget, while the phase cubic saturates. Two degree-3
-  codes, opposite behavior → saturation is a property of the **phase geometry**,
-  not of order-3/cubic complexity. This also **kills the by-construction confound**
-  (e2b is a balanced, non-dedicated head) and shows the high-C faithfulness ceiling
-  is *itself* phase-specific (e2b: 0.98 at C=80 where the pinwheel fell to 0.87).
-  `figs/spd_budget_sweep.png`.
-- **Faithfulness caveat — saturation is decoupled from it.** At high C, order-3 SPD
-  does not reach full faithfulness (country AUC plateaus ~0.77–0.87 at C=80), and
-  **neither more steps (10k→20k) nor lower minimality (Schatten 1.0→0.1→0.01)
-  restores it** — dropping Schatten actually *worsened* reconstruction, so the
-  ceiling is an optimization/conditioning effect (the country logit is the
-  worst-reconstructed output: the cubic is what SPD struggles to fit), not a
-  minimality effect. Crucially, **saturation survives all of it**: dominant/C =
-  99–100% across Schatten ∈ {0.01, 0.1, 1.0}, steps ∈ {10k, 20k}, and faithfulness
-  0.66→0.95 — and = 95% at the one fully-faithful budget (C=40, AUC 0.95). So
-  saturation is **neither a minimality artifact nor an underfitting artifact**: it
-  holds at the faithful anchor and is invariant to every knob that could have
-  manufactured it.
-- **Seeds.** recon-95 stable to ±1–2; order-3 dominant saturates in both seeds;
-  order-2 dominant noisier but always a low budget fraction.
+**Held claim (Task 1), rewritten to what survives:**
 
-**Held claim (Task 1), at exactly this strength:**
+> Run with the real APD solver, the country readout is decomposed **faithfully**
+> at every order (at moderate budget), and the feature **resolves into a small,
+> bounded set of components at every order and geometry** (recon-95 ~2–7; the
+> effective component count plateaus far below the budget — it does **not** track
+> it). There is **no saturation and no rank inflation** on the decomposition axis.
+> A *modest, bounded* dimensionality difference remains (the phase code spans
+> somewhat more components than a polynomial of the same degree), and the phase
+> code uniquely resists faithful high-budget decomposition. The geometry-specific
+> effect with a clean signal is therefore on the **attribution axis** (Task 2:
+> first-order attribution is blind to phase codes, recoverable for polynomials of
+> the same degree), **not** on the decomposition axis.
 
-> For a phase/periodic encoding, attribution-based parameter decomposition does
-> not resolve the feature into a bounded set of components: the count of
-> components dominated by the feature tracks the total budget (95–100% across
-> C = 40/80/120, both seeds), whereas a gated feature of lower order resolves into
-> a stable ~15%. Notably this is **not** a reconstruction-cost effect — both
-> features reconstruct from ~5–6 components — so it is a failure of the
-> attribution/selection step to find stable structure, specific to the phase
-> geometry, not a statement that the feature is intrinsically more expensive.
-
-(Robustness: saturation is invariant to the minimality coefficient (99–100% across
-Schatten ∈ {0.01, 0.1, 1.0} at C=80 — not a minimality artifact), holds at the
-fully-faithful C=40 budget, and — decisively — is **absent in a polynomial cubic
-of the same degree** (e2b redundancy ≈0 vs phase 7–27), which confirms the
-"specific to the phase geometry" clause by direct test and kills the
-by-construction confound. The high-C faithfulness ceiling is itself phase-specific
-— see the two bullets above.)
+The earlier dominant-count / redundancy figure (`figs/spd_budget_sweep.png`) is
+retained only as the **confounded metric, shown for completeness**.
 
 ## Task 2 — kill the by-construction confound · **the key correction**
 
@@ -208,34 +193,35 @@ training (AUC 0.565) — which separately corroborates the Task-2 bound.
    readout, used a TMS task-config stub to hit the generic loss branches, and
    passed our own target/dataloader (the dummy pretrained path is never read).
 2. **`model_m2_xor.pt` excluded** (composite gated construction, not a standard Head).
-3. **Absolute component counts depend on C, batch-topk=10, Schatten p=0.9 and the
-   alive/serves thresholds — so we do not lean on them.** The budget-robust signals
-   are *recon-95* (≈5–6, flat across C) and the *dominant-count-as-fraction-of-C*
-   (saturates at order-3, ~15% at order-2). The earlier "2× / 38-of-40" framing was
-   metric-fragile and has been replaced by the saturation claim.
+3. **Component counts depend on C, batch-topk=10, Schatten p=0.9 and thresholds —
+   and the `dominant = argmax-over-8` metric is *confounded* by readout
+   composition.** The clean, budget-robust signals are *recon-95* (~2–7, flat) and
+   the *country-only* participation ratio (plateaus far below C). The earlier
+   "2× / 38-of-40 / saturation / redundancy" framing was confounded and is
+   **withdrawn** (see the budget-sweep subsection).
 4. **SGD cannot reach a clean periodic high-order code from scratch** (order-3
    `sin3θ`: 0.795; order-4 `sin4θ`: 0.565). Reported, not hidden — it bounds the
    phase-regime claims.
 
 ## Bottom-line claim, rewritten to what survived
 
-- **For a phase/periodic encoding, attribution-based parameter decomposition does
-  not resolve the feature into a bounded set of components** — the count of
-  components dominated by the feature tracks the total budget (95–100% across
-  C = 40/80/120, both seeds), vs a stable ~15% for a lower-order gated feature.
-  This is **not a reconstruction-cost effect** (both reconstruct from ~5–6
-  components); it is a failure of the *attribution/selection* step to find stable
-  structure, specific to the phase geometry — **not** a claim that the feature is
-  intrinsically more expensive. *(reframed: saturation, not inflation)*
+- **On the decomposition axis there is no clean geometry effect.** Run with the
+  real APD solver, the country readout decomposes **faithfully** at every order and
+  the feature **resolves into a small, bounded set of components everywhere**
+  (recon-95 ~2–7; the country-only effective-component count plateaus far below the
+  budget). **No saturation, no rank inflation.** A *modest, bounded* dimensionality
+  difference remains (phase spans somewhat more components than a same-degree
+  polynomial), and the phase code uniquely resists faithful high-budget
+  decomposition. *(saturation/redundancy claim withdrawn — it was a confounded
+  cross-feature metric)*
+- **The clean geometry-specific result is on the attribution axis:** first-order
+  attribution is blind to *phase/periodic* codes (gradient tangential) but recovers
+  a homogeneous polynomial of the same degree. *(survives — the load-bearing claim)*
 - **The order-2 gated feature is not carried by one stable component but is
   separable conditional on the features it interacts with** — robust to a
-  gradient-free, PCA-free metric and (attenuated) to a new feature pair. *(survived)*
-- **First-order attribution is *not* blind to high-order features in general; it
-  is blind specifically to *phase/periodic* codes** (gradient tangential), and
-  recovers a homogeneous polynomial code of the same degree. *(claim corrected)*
+  gradient-free, PCA-free metric and (attenuated) to a new feature pair. *(survives)*
 - **None of this is impossibility.** Faithful decomposition exists at every order;
-  what fails at order-3 is the *selection* of a bounded, stable component set, not
-  reconstruction. *(unchanged in spirit)*
+  country reconstructs from a handful of components regardless of geometry.
 
 See `STEELMAN_MEMO.md` for the per-task survive/weaken/strengthen ledger and
 `LIMITATIONS.md` for scope.

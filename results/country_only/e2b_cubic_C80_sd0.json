@@ -1,0 +1,11 @@
+{
+  "model_key": "e2b_cubic",
+  "C": 80,
+  "seed": 0,
+  "country_auc_target": 0.9792365118336926,
+  "country_auc_spd": 0.9782109785474816,
+  "PR_effective_components": 7.557449174597968,
+  "PR_frac": 0.0944681146824746,
+  "recon_k95": 6,
+  "n_eff_above_5pct": 10
+}

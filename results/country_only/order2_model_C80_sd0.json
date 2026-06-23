@@ -1,0 +1,11 @@
+{
+  "model_key": "order2_model",
+  "C": 80,
+  "seed": 0,
+  "country_auc_target": 0.99380782386699,
+  "country_auc_spd": 0.9918166561182185,
+  "PR_effective_components": 11.891794646876676,
+  "PR_frac": 0.14864743308595846,
+  "recon_k95": 1,
+  "n_eff_above_5pct": 13
+}

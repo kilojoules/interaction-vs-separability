@@ -1,0 +1,11 @@
+{
+  "model_key": "order3_pinwheel",
+  "C": 80,
+  "seed": 0,
+  "country_auc_target": 0.9786269476109543,
+  "country_auc_spd": 0.6757881113062771,
+  "PR_effective_components": 17.418848735185914,
+  "PR_frac": 0.21773560918982393,
+  "recon_k95": 2,
+  "n_eff_above_5pct": 21
+}

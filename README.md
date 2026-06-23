@@ -21,54 +21,53 @@ machinery lives entirely there.
 
 ## The claim, stated at the strength the evidence licenses
 
-> For a **phase/periodic** encoding, attribution-based parameter decomposition
-> (APD/SPD) does **not resolve the feature into a bounded set of components** — the
-> count of components dominated by it tracks the total budget (95–100% across
-> C = 40/80/120), whereas a lower-order **gated** feature resolves into a stable
-> ~15%. This is **not** a reconstruction-cost effect (both reconstruct from ~5–6
-> components): it is a failure of the *attribution/selection* step, specific to
-> the phase geometry. Two corroborated side-claims: the gated feature is separable
-> only **conditional on the features it interacts with**; and first-order
-> attribution is blind **only** to phase/periodic codes, not to high-order codes
-> in general (a homogeneous polynomial of the same degree is fully recoverable).
-> None of this is impossibility — faithful decomposition exists at every order;
-> what fails at order-3 is selection, not reconstruction.
+> **The clean geometry-specific effect is on the *attribution* axis, not the
+> decomposition axis.** Run with the real APD solver, the country readout
+> decomposes **faithfully** at every order and the feature **resolves into a small,
+> bounded set of components at every order and geometry** (recon-95 ~2–7; the
+> country-only effective-component count plateaus far below the budget) — **no
+> saturation, no rank inflation**. What *is* phase-specific is that **first-order
+> attribution is blind to phase/periodic codes** (the gradient is tangential to the
+> level sets) while it fully recovers a homogeneous polynomial of the *same degree*.
+> A modest, bounded dimensionality difference remains (phase spans somewhat more
+> components), and the phase code uniquely resists *faithful* high-budget
+> decomposition. Side-claim: the order-2 gated feature is separable only
+> **conditional on the features it interacts with**.
+>
+> *(An earlier version of this claim asserted budget "saturation" on the
+> decomposition axis; that rested on a `dominant = argmax-over-8-outputs` metric
+> confounded by readout composition, and is **withdrawn** — see FINDINGS Task 1.)*
 
 See `FINDINGS.md` for the headline tables and `LIMITATIONS.md` for what this does
 and does not show.
 
-## Which solver, and which axis (two methods questions, answered)
+## Which solver, and which axis (methods)
 
-**Which solver produced the phase-vs-gated saturation numbers?** — **Apollo's
-`optimize()` from the `spd` package** (`github.com/ApolloResearch/apd`), i.e. the
+**Which solver?** — All decomposition-axis numbers come from **Apollo's
+`optimize()` in the `spd` package** (`github.com/ApolloResearch/apd`), i.e. the
 real **APD** (Attribution-based Parameter Decomposition) algorithm: each readout
 weight is decomposed into `C` subnetwork components (W = Σ_c A_cB_c), trained with
 param-match + top-k reconstruction + activation reconstruction + Schatten
-minimality, `attribution_type="gradient"`. **Every** order-2 / order-3 / e2b
-dominant-count, recon-95, and redundancy number comes from this solver
-(`experiments/e1_spd_decompose.py`, `e1b_budget.py`, `e1e_e2b_saturation.py`). The
-parameter-Jacobian "reader" fallback (`src/separability.py`) is used **only** for
-the first-order metrics — blindness, reader alignment, nonlinear-unit count in
-Tasks 2/4/5 — and **never** for the saturation result.
+minimality, `attribution_type="gradient"`
+(`experiments/e1_spd_decompose.py`, `e1b_budget.py`, `e1e_e2b_saturation.py`,
+`e1f_country_only.py`). The parameter-Jacobian "reader" fallback
+(`src/separability.py`) is used **only** for the first-order/attribution-axis
+metrics (blindness, reader alignment, nonlinear-unit count in Tasks 2/4/5).
+Component effects are read off the *trained* APD components by **causal ablation**
+(`set_subnet_to_zero`), not gradients.
 
-- *Reconciling the "attribution/selection failure" language:* it is literal, not
-  loose. APD **is** attribution-based — its per-input top-k component selection is
-  computed from gradient attributions — and the finding is that this
-  attribution-based decomposition cannot concentrate the phase feature into a
-  bounded component set. The dominant-count and recon-95 are then read off the
-  *trained* APD components by **causal ablation** (zero a component, measure the
-  output change), so the saturation *metric* does not itself depend on gradients;
-  only APD's internal selection does.
-
-**Is there a decomposition-axis (real-SPD) redundancy number for the homogeneous
-cubic, or only an attribution-axis one?** — **It is on the decomposition axis.**
-The e2b polynomial-cubic control was decomposed by the **same** Apollo `optimize()`
-solver at C = 40/80/120, giving redundancy **0.0 / 0.1 / 0.3** (dominant 0/1/2,
-faithful 0.98 throughout) vs the phase model's **7 / 13 / 27** from the identical
-pipeline. So the phase-vs-polynomial contrast is apples-to-apples on the real APD
-decomposition. **Point 1 survives as written** — it does *not* retreat to the
-attribution axis: the APD solver itself resolves the polynomial cubic into a
-bounded set and saturates only on the phase cubic.
+**Two metrics, and why one was withdrawn.** A `dominant = argmax-over-8-outputs`
+metric showed country tracking the budget at order-3 (95–100% of C) — but it is
+**confounded by readout composition** (the phase model's readout is country-heavy
+by construction, so nearly every component is nominally country-dominant). The
+confound-free re-test decomposes the **country-only readout** (single output, no
+argmax) and measures the participation ratio of per-component country effect: it
+**plateaus far below the budget for every encoding** (`figs/spd_country_only.png`),
+so there is **no saturation**. The `dominant`/redundancy result (incl. the e2b
+"redundancy 0 vs 7–27" contrast) is therefore **withdrawn** as confounded and kept
+only for completeness in `figs/spd_budget_sweep.png`. The clean decomposition-axis
+finding is just: faithful + bounded resolution (~2–7 components) everywhere; the
+geometry-specific signal is the attribution-axis blindness.
 
 ## What's here
 
@@ -80,8 +79,10 @@ src/
   spd_analyze.py      causal (non-gradient) analysis of a trained SPD decomposition
 experiments/
   e1_spd_decompose.py  run the REAL APD/SPD solver on a readout (Task 1)
-  e1b_budget.py /      budget sweep C=40/80/120: recon-95 vs dominant-count
-  e1c_budget_summary.py  -> figs/spd_budget_sweep.png  (the saturation result)
+  e1b_budget.py /      budget sweep C=40/80/120 (dominant-count: CONFOUNDED metric,
+  e1c_budget_summary.py  withdrawn) -> figs/spd_budget_sweep.png
+  e1f_country_only.py / confound-free country-only decomposition (PR vs budget)
+  e1g_country_only_figure.py  -> figs/spd_country_only.png  (no saturation)
   e1_figure.py         aggregate Task-1 runs -> figs/spd_components.png
   e2_train_nondedicated.py / e2b_clean_cubic.py  non-dedicated order-3 (Task 2)
   e3_sweep_figure.py   minimality sweep (Task 3 — no tension found)

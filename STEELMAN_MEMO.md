@@ -6,7 +6,7 @@ written from.
 
 | # | task | verdict | one-line outcome |
 |---|------|---------|------------------|
-| 1 | run the real APD/SPD solver | **REFRAMED → budget saturation, not cost** | Solver faithful on all 3 readouts. The order-3 effect is *saturation*: country-dominated components track the budget ceiling (**95–100%** across C=40/80/120, both seeds) vs a stable **~15%** for the order-2 gate — but **recon-95 (genuine need) is flat at ~5–6 for both**. So it's a failure of the attribution/*selection* step to find bounded structure, specific to the phase geometry — not a higher reconstruction cost. **Saturation is invariant to a 100× minimality (Schatten) sweep and a 2× step sweep (99–100% throughout)**, so it is not a minimality or underfitting artifact. (The earlier "2× / 38-of-40 rank inflation" framing was metric-fragile, withdrawn.) |
+| 1 | run the real APD/SPD solver | **REVISED → no decomposition-axis effect (saturation withdrawn)** | Solver faithful on all 3 readouts; country resolves into a small bounded set everywhere (recon-95 ~2–7). The "saturation" (dominant-count tracking the budget) was a **confounded metric** — `argmax-over-8-outputs` is dominated by readout composition (phase readout is country-heavy by construction). A confound-free country-**only** decomposition shows the effective component count **plateaus far below the budget for every encoding** (no saturation). What remains: a *modest, bounded* dimensionality difference (phase PR ~11–17 vs poly ~8) and a phase-only faithfulness ceiling. The clean geometry signal is the **attribution-axis blindness** (Task 2), not the decomposition. |
 | 2 | kill the by-construction confound | **SPLIT: inflation STRENGTHENED, blindness REFUTED-as-stated** | Inflation appears in a non-dedicated from-scratch cubic (24 units). But a homogeneous cubic `a³−3ab²` (AUC 0.979) is **not** first-order-blind, while `sin3θ` is — so blindness is a *phase-geometry* property, not an order property. |
 | 3 | minimality/simplicity tradeoff | **DROPPED (no tension found)** | Faithfulness is flat across a 100× minimality sweep; component count varies modestly. The asserted tension does not appear — framing removed. |
 | 4 | non-gradient / non-PCA metric | **SURVIVED** | The order-2 dissociation reproduces with single-unit vs causal-units (no grad/PCA): gap 0.37 vs original 0.44. |
@@ -17,42 +17,49 @@ written from.
 The original write-up bundled **two distinct effects** under "order-3 breaks
 separability," and the steelman corrected the framing of both:
 
-1. **Budget saturation, not cost.** The budget sweep killed the "rank inflation"
-   reading: country reconstructs from ~5–6 components at *every* order, so it is
-   not intrinsically more expensive. What is phase-specific is that the
-   *attribution/selection* step never resolves the phase feature into a bounded
-   set — its dominant-component count tracks whatever budget it is given
-   (95–100%; redundancy dom/recon-95 = 7–27×), vs ~15% (redundancy 1–3×) for the
-   order-2 gate. **"Phase-specific" is now directly tested:** a non-dedicated,
-   from-scratch *polynomial* cubic of the same degree (`a³−3ab²`) resolves
-   completely (redundancy ≈0, faithful at every budget), so saturation is a
-   property of the phase geometry, not of order-3/cubic complexity — and the
-   by-construction confound is killed. The defensible claim is **selection failure
-   specific to phase geometry**, not cost.
-2. **First-order blindness (gradient tangentiality).** *Not about order — about
-   geometry.* Periodic/phase codes hide signal from first-order attribution;
-   homogeneous polynomial codes of the same degree do not. Corrected, not
-   retracted: blindness is real for the *phase* family the puzzle used, but is not
-   a generic consequence of interaction order.
+1. **No decomposition-axis effect (saturation/inflation both withdrawn).** Two
+   successive metrics looked dramatic and both fell: "rank inflation" (2× / 38-of-40)
+   was metric-fragile, and its replacement "budget saturation" (dominant-count
+   tracks the budget) was **confounded by readout composition** — the phase
+   readout is country-heavy by construction, so nearly every component is nominally
+   country-dominant. The confound-free country-only decomposition (single output,
+   participation-ratio spread metric) shows the effective component count
+   **plateaus far below the budget for every encoding** — country resolves into a
+   bounded set everywhere (recon-95 ~2–7). The clean residual is small: phase is a
+   *modestly* higher-dimensional but bounded decomposition (~11–17 vs ~8 components)
+   and uniquely resists faithful high-budget decomposition. **Lesson: every
+   component-*count* metric we tried on the multi-output readout was confounded;
+   only the country-only spread metric is clean.**
+2. **First-order blindness (gradient tangentiality) — the load-bearing result.**
+   *Not about order — about geometry.* Periodic/phase codes hide signal from
+   first-order attribution; a homogeneous polynomial of the same degree does not
+   (Euler: x·∇f = d·f). This is the clean, confound-free geometry-specific finding,
+   directly tested on two degree-3 codes with opposite behavior.
 
 ## Final bounded claim (proposal seed) — held at exactly this strength
 
-> For a phase/periodic encoding, attribution-based parameter decomposition does
-> not resolve the feature into a bounded set of components: the count of
-> components dominated by the feature tracks the total budget (95–100% across
-> C = 40/80/120, both seeds), whereas a gated feature of lower order resolves into
-> a stable ~15%. Notably this is **not** a reconstruction-cost effect — both
-> features reconstruct from ~5–6 components — so it is a failure of the
-> attribution/selection step to find stable structure, specific to the phase
-> geometry, not a statement that the feature is intrinsically more expensive.
+> **The geometry-specific effect is on the attribution axis, not the decomposition
+> axis.** Run with the real APD solver, a feature's readout decomposes faithfully
+> at every order and the feature resolves into a small, bounded set of components
+> at every order and geometry (recon-95 ~2–7; the country-only effective-component
+> count plateaus far below the budget) — there is **no saturation and no rank
+> inflation**. What is phase-specific is that **first-order attribution is blind to
+> phase/periodic codes** (the gradient is tangential to the level sets) while it
+> fully recovers a homogeneous polynomial of the *same degree* (Euler's identity).
+> A modest, bounded decomposition-dimensionality difference remains (phase spans
+> somewhat more components), and the phase code uniquely resists *faithful*
+> high-budget decomposition.
 
-Plus two corroborated side-claims: order-2 *gated* features are not carried by one
+Plus a corroborated side-claim: order-2 *gated* features are not carried by one
 stable component but become separable conditional on the interacting features
 (survived a gradient-free, PCA-free metric; appeared attenuated on a held-out
-gate); and first-order attribution is blind only to *phase/periodic* codes, not to
-high-order codes in general. None of this is impossibility — faithful
-decomposition exists at every order; what fails at order-3 is *selection*, not
-reconstruction.
+gate). None of this is impossibility — faithful decomposition exists at every
+order; country reconstructs from a handful of components regardless of geometry.
+
+**Methodological lesson for the proposal:** component-*count* / "saturation"
+metrics on a multi-output readout are confounded by readout composition; isolate
+the feature (single-output decomposition) and use a threshold-free spread metric,
+or stay on the attribution axis where the geometry signal is clean.
 
 ## What would move this from toy to real (proposal hooks)
 
@@ -60,10 +67,13 @@ reconstruction.
   produce clean high-order *phase* codes, so a naturally-occurring high-order
   feature (or a verified construction in a real LM) is needed before any scaled
   claim about phase-blindness.
-- The scalable screen is **selection stability, not component count**: run APD/SPD
-  at ≥2 budgets and test whether a feature's dominant-component count is a stable
-  fraction of the budget (resolves) or tracks the ceiling (saturates). Pair it
-  with recon-95 to separate "expensive" from "unresolved."
-- Distinguish three things in any scaled study and do not conflate them:
-  *reconstruction cost* (recon-95, measurable everywhere), *selection/saturation*
-  (dominant-fraction vs budget), and *blindness* (encoding-geometry-specific).
+- The clean, scalable screen is the **attribution-axis blindness**, not any
+  component-count metric: does first-order attribution recover the feature, or is
+  its gradient tangential to the level sets? It needs no budget sweep and was the
+  one geometry signal that survived every confound check.
+- **Do not use multi-output dominant-component or "saturation" metrics** — we
+  showed twice that component-count metrics on a shared multi-output readout are
+  confounded by readout composition. If a decomposition-axis count is wanted,
+  isolate the feature (single-output decomposition) and use a threshold-free spread
+  metric (participation ratio) vs budget; pair with recon-95 for "how many does it
+  genuinely need."
