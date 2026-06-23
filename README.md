@@ -37,6 +37,39 @@ machinery lives entirely there.
 See `FINDINGS.md` for the headline tables and `LIMITATIONS.md` for what this does
 and does not show.
 
+## Which solver, and which axis (two methods questions, answered)
+
+**Which solver produced the phase-vs-gated saturation numbers?** — **Apollo's
+`optimize()` from the `spd` package** (`github.com/ApolloResearch/apd`), i.e. the
+real **APD** (Attribution-based Parameter Decomposition) algorithm: each readout
+weight is decomposed into `C` subnetwork components (W = Σ_c A_cB_c), trained with
+param-match + top-k reconstruction + activation reconstruction + Schatten
+minimality, `attribution_type="gradient"`. **Every** order-2 / order-3 / e2b
+dominant-count, recon-95, and redundancy number comes from this solver
+(`experiments/e1_spd_decompose.py`, `e1b_budget.py`, `e1e_e2b_saturation.py`). The
+parameter-Jacobian "reader" fallback (`src/separability.py`) is used **only** for
+the first-order metrics — blindness, reader alignment, nonlinear-unit count in
+Tasks 2/4/5 — and **never** for the saturation result.
+
+- *Reconciling the "attribution/selection failure" language:* it is literal, not
+  loose. APD **is** attribution-based — its per-input top-k component selection is
+  computed from gradient attributions — and the finding is that this
+  attribution-based decomposition cannot concentrate the phase feature into a
+  bounded component set. The dominant-count and recon-95 are then read off the
+  *trained* APD components by **causal ablation** (zero a component, measure the
+  output change), so the saturation *metric* does not itself depend on gradients;
+  only APD's internal selection does.
+
+**Is there a decomposition-axis (real-SPD) redundancy number for the homogeneous
+cubic, or only an attribution-axis one?** — **It is on the decomposition axis.**
+The e2b polynomial-cubic control was decomposed by the **same** Apollo `optimize()`
+solver at C = 40/80/120, giving redundancy **0.0 / 0.1 / 0.3** (dominant 0/1/2,
+faithful 0.98 throughout) vs the phase model's **7 / 13 / 27** from the identical
+pipeline. So the phase-vs-polynomial contrast is apples-to-apples on the real APD
+decomposition. **Point 1 survives as written** — it does *not* retreat to the
+attribution axis: the APD solver itself resolves the polynomial cubic into a
+bounded set and saturates only on the phase cubic.
+
 ## What's here
 
 ```
