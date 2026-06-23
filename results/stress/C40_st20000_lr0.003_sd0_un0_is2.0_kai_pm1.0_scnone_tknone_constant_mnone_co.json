@@ -1,0 +1,20 @@
+{
+  "country_auc_target": 0.9786269476109543,
+  "country_auc_spd": 0.721023175770333,
+  "recon_rel": 0.8860193311179135,
+  "config": {
+    "C": 40,
+    "steps": 20000,
+    "lr": 0.003,
+    "seed": 0,
+    "sched": "constant",
+    "unit_norm": 0,
+    "init_scale": 2.0,
+    "init_type": "kaiming_uniform",
+    "pm": 1.0,
+    "schatten": "none",
+    "topk": "none",
+    "m": "none",
+    "multi": 0
+  }
+}

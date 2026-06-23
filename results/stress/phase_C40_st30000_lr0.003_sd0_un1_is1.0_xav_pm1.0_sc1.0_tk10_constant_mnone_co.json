@@ -1,0 +1,24 @@
+{
+  "country_auc_target": 0.9786269476109543,
+  "country_auc_spd": 0.8294547044893722,
+  "recon_rel": 1.5105923672731794,
+  "config": {
+    "C": 40,
+    "steps": 30000,
+    "lr": 0.003,
+    "seed": 0,
+    "sched": "constant",
+    "unit_norm": 1,
+    "init_scale": 1.0,
+    "init_type": "xavier_normal",
+    "pm": 1.0,
+    "schatten": "1.0",
+    "topk": "10",
+    "m": "none",
+    "multi": 0,
+    "model": "phase"
+  },
+  "PR_effective_components": 11.111726366855736,
+  "n_eff_above_5pct": 21,
+  "recon_k95": 1
+}

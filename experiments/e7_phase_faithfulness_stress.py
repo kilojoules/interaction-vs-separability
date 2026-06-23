@@ -21,12 +21,21 @@ from torch.utils.data import TensorDataset, DataLoader
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src")); sys.path.insert(0, str(ROOT / "experiments"))
 import spd_readout as R, spd_analyze as A
-from e1f_country_only import country_target
+from e1f_country_only import country_target, country_effect
 from spd.run_spd import Config, TMSTaskConfig, optimize
 from spd.utils import set_seed
 from spd.module_utils import init_param_
 BDC = Path("/Users/julianquick/bdc/bluedot-tais-puzzle")
-CKPT = BDC / "model_pinwheel.pt"
+REG = {"phase": BDC/"model_pinwheel.pt", "poly": ROOT/"models"/"nondedicated_clean_cubic.pt",
+       "xor": ROOT/"models"/"order3_xor.pt", "gate": BDC/"model.pt"}
+
+
+def country_label(model, te):
+    if model == "poly":
+        return np.load(ROOT/"results"/"task2"/"cubic_labels.npz")["c_te"]
+    if model == "xor":
+        y = te["labels"]; return (y[:, 0] ^ y[:, 2] ^ y[:, 6]).astype(np.int64)
+    return te["labels"][:, A.CI]   # phase / gate (model.pt) / pinwheel: real country
 
 
 def none_or(v, cast=float):
@@ -35,9 +44,10 @@ def none_or(v, cast=float):
 
 def run(args):
     set_seed(args.seed)
+    CKPT = REG[args.model]
     tr = np.load(BDC/"cache/train.npz"); te = np.load(BDC/"cache/test.npz")
     L_tr, _ = R.compute_L(CKPT, tr["emb"]); L_te, _ = R.compute_L(CKPT, te["emb"])
-    yc = te["labels"][:, A.CI]
+    yc = country_label(args.model, te)
     m = none_or(args.m, int)
     if args.multi:
         target = R.load_readout_target(CKPT); d_out = 8
@@ -78,7 +88,23 @@ def run(args):
     recon_rel = float(((t.numpy() - s.numpy()) ** 2).mean() / (t.numpy().var() + 1e-9))
     rep = {"country_auc_target": A.auc(t_c, yc), "country_auc_spd": A.auc(s_c, yc),
            "recon_rel": recon_rel, "config": vars(args)}
-    tag = (f"C{args.C}_st{args.steps}_lr{args.lr}_sd{args.seed}_un{args.unit_norm}_is{args.init_scale}"
+    # faithfulness-vs-parsimony: effective # components carrying country (country-only only)
+    if not args.multi:
+        e, _ = country_effect(spd, Xte)
+        rep["PR_effective_components"] = float((e.sum() ** 2) / ((e ** 2).sum() + 1e-12))
+        rep["n_eff_above_5pct"] = int((e > 0.05 * e.max()).sum())
+        order = np.argsort(-e); aucs = []
+        for k in range(1, args.C + 1):
+            mask = torch.zeros(Xte.shape[0], 1, args.C, dtype=torch.bool); mask[:, :, order[:k]] = True
+            with torch.no_grad():
+                z = spd(Xte, topk_mask=mask).squeeze(-1).squeeze(-1).numpy()
+            aucs.append(A.auc(z, yc))
+        full = aucs[-1]
+        rep["recon_k95"] = int(next((k for k, a in enumerate(aucs, 1) if a >= 0.95 * full), args.C))
+        rep["recon_curve"] = [float(a) for a in aucs]   # AUC vs #components kept (the Pareto frontier)
+        # Pareto area = normalized faithfulness deficit when constrained to few components
+        rep["pareto_area"] = float(np.mean([full - a for a in aucs]) / (full + 1e-9))
+    tag = (f"{args.model}_C{args.C}_st{args.steps}_lr{args.lr}_sd{args.seed}_un{args.unit_norm}_is{args.init_scale}"
            f"_{args.init_type[:3]}_pm{args.pm}_sc{args.schatten}_tk{args.topk}_{args.sched}"
            f"_m{args.m}_{'multi' if args.multi else 'co'}")
     out = ROOT/"results"/"stress"; out.mkdir(parents=True, exist_ok=True)
@@ -96,4 +122,5 @@ if __name__ == "__main__":
     p.add_argument("--pm", type=float, default=1.0); p.add_argument("--schatten", default="none")
     p.add_argument("--topk", default="none"); p.add_argument("--m", default="none")
     p.add_argument("--multi", type=int, default=0)
+    p.add_argument("--model", default="phase", choices=["phase", "poly", "xor", "gate"])
     run(p.parse_args())
