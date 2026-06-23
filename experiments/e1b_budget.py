@@ -15,8 +15,8 @@ REG = {"order1_vanilla": BDC/"model_vanilla.pt", "order2_model": BDC/"model.pt",
        "order3_pinwheel": BDC/"model_pinwheel.pt"}
 
 
-def analyze(model_key, C, seed, sc=1.0):
-    pth = ROOT/"results"/"spd"/f"{model_key}_C{C}_sc{sc}_sd{seed}.pth"
+def analyze(model_key, C, seed, sc=1.0, pthdir="results/spd", out_suffix=""):
+    pth = ROOT/pthdir/f"{model_key}_C{C}_sc{sc}_sd{seed}.pth"
     if not pth.exists():
         print(f"MISSING {pth}"); return None
     ckpt = REG[model_key]
@@ -28,7 +28,7 @@ def analyze(model_key, C, seed, sc=1.0):
     rep = A.budget_report(spd, target, X, y)
     rep.update({"model_key": model_key, "seed": seed})
     out = ROOT/"results"/"budget"; out.mkdir(parents=True, exist_ok=True)
-    (out/f"{model_key}_C{C}_sd{seed}.json").write_text(json.dumps(rep, indent=2))
+    (out/f"{model_key}_C{C}_sd{seed}{out_suffix}.json").write_text(json.dumps(rep, indent=2))
     print(f"[{model_key} C{C} sd{seed}] country AUC tgt {rep['country_auc_target']:.3f} "
           f"spd {rep['country_auc_spd']:.3f} recon_rel {rep['recon_rel']:.3f} | "
           f"serves {rep['serves_country']}(lin {rep['serves_linear_mean']:.1f}) "
@@ -39,4 +39,5 @@ def analyze(model_key, C, seed, sc=1.0):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("model_key"); ap.add_argument("C", type=int); ap.add_argument("seed", type=int)
-    a = ap.parse_args(); analyze(a.model_key, a.C, a.seed)
+    ap.add_argument("--pthdir", default="results/spd"); ap.add_argument("--out-suffix", default="")
+    a = ap.parse_args(); analyze(a.model_key, a.C, a.seed, pthdir=a.pthdir, out_suffix=a.out_suffix)

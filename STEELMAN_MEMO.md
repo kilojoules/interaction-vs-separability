@@ -6,7 +6,7 @@ written from.
 
 | # | task | verdict | one-line outcome |
 |---|------|---------|------------------|
-| 1 | run the real APD/SPD solver | **STRENGTHENED (numbers being pinned)** | Solver faithful on all 3 readouts. At order-3, two distinct metrics: country has **2×** the *substantial-contributor* components of a linear feature (serves 6 vs 3) and is the argmax of **38/40** components — but reconstructs to 95% fidelity from only **~6** (recon-95), so the 38 is a redundant tail, not genuine need. Budget sweep (C=80/120, 2 seeds) running to settle plateau-vs-saturation. |
+| 1 | run the real APD/SPD solver | **REFRAMED → budget saturation, not cost** | Solver faithful on all 3 readouts. The order-3 effect is *saturation*: country-dominated components track the budget ceiling (**95–100%** across C=40/80/120, both seeds) vs a stable **~15%** for the order-2 gate — but **recon-95 (genuine need) is flat at ~5–6 for both**. So it's a failure of the attribution/*selection* step to find bounded structure, specific to the phase geometry — not a higher reconstruction cost. (The earlier "2× / 38-of-40 rank inflation" framing was metric-fragile, withdrawn.) |
 | 2 | kill the by-construction confound | **SPLIT: inflation STRENGTHENED, blindness REFUTED-as-stated** | Inflation appears in a non-dedicated from-scratch cubic (24 units). But a homogeneous cubic `a³−3ab²` (AUC 0.979) is **not** first-order-blind, while `sin3θ` is — so blindness is a *phase-geometry* property, not an order property. |
 | 3 | minimality/simplicity tradeoff | **DROPPED (no tension found)** | Faithfulness is flat across a 100× minimality sweep; component count varies modestly. The asserted tension does not appear — framing removed. |
 | 4 | non-gradient / non-PCA metric | **SURVIVED** | The order-2 dissociation reproduces with single-unit vs causal-units (no grad/PCA): gap 0.37 vs original 0.44. |
@@ -15,32 +15,39 @@ written from.
 ## What changed because of the attack
 
 The original write-up bundled **two distinct effects** under "order-3 breaks
-separability." The steelman separates them:
+separability," and the steelman corrected the framing of both:
 
-1. **Rank inflation (cost).** *Robust, architecture-independent, solver-confirmed.*
-   Higher-complexity features need more parameter components. This is the load-
-   bearing, defensible claim.
+1. **Budget saturation, not cost.** The budget sweep killed the "rank inflation"
+   reading: country reconstructs from ~5–6 components at *every* order, so it is
+   not intrinsically more expensive. What is order-3-specific is that the
+   *attribution/selection* step never resolves the phase feature into a bounded
+   set — its dominant-component count tracks whatever budget it is given
+   (95–100%), vs ~15% for the order-2 gate. The defensible claim is about
+   **selection failure specific to phase geometry**, not cost.
 2. **First-order blindness (gradient tangentiality).** *Not about order — about
    geometry.* Periodic/phase codes hide signal from first-order attribution;
-   homogeneous polynomial codes of the same degree do not. The original claim is
-   corrected, not retracted: blindness is real for the *phase* family the puzzle
-   used, but is not a generic consequence of interaction order.
+   homogeneous polynomial codes of the same degree do not. Corrected, not
+   retracted: blindness is real for the *phase* family the puzzle used, but is not
+   a generic consequence of interaction order.
 
-## Final bounded claim (proposal seed)
+## Final bounded claim (proposal seed) — held at exactly this strength
 
-> In a toy model with known ground truth, raising a feature's
-> interaction/computational complexity **inflates the cost** of an
-> attribution-based parameter decomposition: the real APD/SPD solver stays
-> faithful but spends a growing share of components on the complex feature (2× a
-> linear feature at order-3), and this reproduces in a non-dedicated,
-> from-scratch model. Separately, order-2 *gated* features are not carried by one
-> stable component but become separable once you condition on the interacting
-> features — robust to a gradient-free, PCA-free metric. We **withdraw** the
-> stronger claim that high interaction order makes a feature invisible to
-> first-order attribution: that holds only for *phase/periodic* encodings (where
-> the gradient is tangential), not for homogeneous polynomial encodings of the
-> same degree. None of this is impossibility — faithful decomposition exists at
-> every order; the **budget** is what grows.
+> For a phase/periodic encoding, attribution-based parameter decomposition does
+> not resolve the feature into a bounded set of components: the count of
+> components dominated by the feature tracks the total budget (95–100% across
+> C = 40/80/120, both seeds), whereas a gated feature of lower order resolves into
+> a stable ~15%. Notably this is **not** a reconstruction-cost effect — both
+> features reconstruct from ~5–6 components — so it is a failure of the
+> attribution/selection step to find stable structure, specific to the phase
+> geometry, not a statement that the feature is intrinsically more expensive.
+
+Plus two corroborated side-claims: order-2 *gated* features are not carried by one
+stable component but become separable conditional on the interacting features
+(survived a gradient-free, PCA-free metric; appeared attenuated on a held-out
+gate); and first-order attribution is blind only to *phase/periodic* codes, not to
+high-order codes in general. None of this is impossibility — faithful
+decomposition exists at every order; what fails at order-3 is *selection*, not
+reconstruction.
 
 ## What would move this from toy to real (proposal hooks)
 
@@ -48,9 +55,10 @@ separability." The steelman separates them:
   produce clean high-order *phase* codes, so a naturally-occurring high-order
   feature (or a verified construction in a real LM) is needed before any scaled
   claim about phase-blindness.
-- The robust, scalable screen is **rank inflation**: run APD/SPD on a real small
-  LM where an interaction feature is independently localized and test whether
-  component count tracks measured interaction order. The non-gradient causal-unit
-  metric (Task 4) is the cheap pre-screen that needs no solver.
-- Distinguish *cost* (component count, measurable everywhere) from *blindness*
-  (encoding-geometry-specific) in any scaled study — do not conflate them again.
+- The scalable screen is **selection stability, not component count**: run APD/SPD
+  at ≥2 budgets and test whether a feature's dominant-component count is a stable
+  fraction of the budget (resolves) or tracks the ceiling (saturates). Pair it
+  with recon-95 to separate "expensive" from "unresolved."
+- Distinguish three things in any scaled study and do not conflate them:
+  *reconstruction cost* (recon-95, measurable everywhere), *selection/saturation*
+  (dominant-fraction vs budget), and *blindness* (encoding-geometry-specific).

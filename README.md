@@ -21,14 +21,18 @@ machinery lives entirely there.
 
 ## The claim, stated at the strength the evidence licenses
 
-> For a **first-order / linear** parameter-decomposition (the family
-> attribution-based methods like APD/SPD belong to), country's computation
-> reconstructs cheaply yet is **not carried by one stable, separable component**,
-> and this degrades with interaction order: **separable → conditionally separable
-> (on the interacting features) → first-order-blind**. The real APD/SPD solver
-> reaches faithfulness on all three readouts but needs **more components** for
-> higher order. This is a statement about **cost and method-blindness, not
-> impossibility** — a nonlinear, higher-rank decomposition recovers every order.
+> For a **phase/periodic** encoding, attribution-based parameter decomposition
+> (APD/SPD) does **not resolve the feature into a bounded set of components** — the
+> count of components dominated by it tracks the total budget (95–100% across
+> C = 40/80/120), whereas a lower-order **gated** feature resolves into a stable
+> ~15%. This is **not** a reconstruction-cost effect (both reconstruct from ~5–6
+> components): it is a failure of the *attribution/selection* step, specific to
+> the phase geometry. Two corroborated side-claims: the gated feature is separable
+> only **conditional on the features it interacts with**; and first-order
+> attribution is blind **only** to phase/periodic codes, not to high-order codes
+> in general (a homogeneous polynomial of the same degree is fully recoverable).
+> None of this is impossibility — faithful decomposition exists at every order;
+> what fails at order-3 is selection, not reconstruction.
 
 See `FINDINGS.md` for the headline tables and `LIMITATIONS.md` for what this does
 and does not show.

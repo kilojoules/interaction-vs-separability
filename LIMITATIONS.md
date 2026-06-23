@@ -8,9 +8,12 @@ truth**, not scale. Nothing here demonstrates behavior in real LLMs.
 built with a decoupled, country-dedicated phase bank (block-diagonal). So its
 *component dedication* and its high cross-seed MMCS are partly construction
 artifacts, not emergent properties. Task 2 partially de-confounds this: a
-non-dedicated, from-scratch homogeneous-cubic model (`e2b`, AUC 0.979) reproduces
-**rank inflation** (24 nonlinear units vs ~6 for a linear feature), so inflation
-is architecture-independent. But **first-order blindness does NOT transfer**: the
+non-dedicated, from-scratch homogeneous-cubic model (`e2b`, AUC 0.979) still
+spreads across more elementary ReLU units (24 vs ~6) — but note (per the Task-1
+budget sweep) this is a *hidden-unit* granularity effect, **not** an SPD-component
+reconstruction-cost effect; at the SPD-component level the feature reconstructs
+from ~5–6 components at every order, and the order-3 signature is budget
+*saturation*, not a higher count. And **first-order blindness does NOT transfer**: the
 homogeneous cubic is fully first-order-recoverable (`<r,L>`=0.979), while the
 constructed `sin3θ` phase code is blind (0.53). Blindness is therefore a property
 of the *phase/periodic encoding geometry*, not of interaction order or of any
