@@ -19,11 +19,16 @@ separability," and the steelman corrected the framing of both:
 
 1. **Budget saturation, not cost.** The budget sweep killed the "rank inflation"
    reading: country reconstructs from ~5–6 components at *every* order, so it is
-   not intrinsically more expensive. What is order-3-specific is that the
+   not intrinsically more expensive. What is phase-specific is that the
    *attribution/selection* step never resolves the phase feature into a bounded
    set — its dominant-component count tracks whatever budget it is given
-   (95–100%), vs ~15% for the order-2 gate. The defensible claim is about
-   **selection failure specific to phase geometry**, not cost.
+   (95–100%; redundancy dom/recon-95 = 7–27×), vs ~15% (redundancy 1–3×) for the
+   order-2 gate. **"Phase-specific" is now directly tested:** a non-dedicated,
+   from-scratch *polynomial* cubic of the same degree (`a³−3ab²`) resolves
+   completely (redundancy ≈0, faithful at every budget), so saturation is a
+   property of the phase geometry, not of order-3/cubic complexity — and the
+   by-construction confound is killed. The defensible claim is **selection failure
+   specific to phase geometry**, not cost.
 2. **First-order blindness (gradient tangentiality).** *Not about order — about
    geometry.* Periodic/phase codes hide signal from first-order attribution;
    homogeneous polynomial codes of the same degree do not. Corrected, not

@@ -63,6 +63,27 @@ is real. (Seed means shown; full per-seed table in `results/budget/`.)
   stays a low fraction (~15%) at order-2: the attribution decomposition never
   resolves the cubic feature into a bounded set of dominant components — it smears
   it across whatever budget it is given.
+- **Saturation is specific to PHASE geometry — now tested, not inferred.** We ran
+  the real solver on a *non-dedicated, from-scratch* homogeneous-cubic model (e2b,
+  `a³−3ab²`, same degree-3 as the pinwheel, matched accuracy). The
+  confound-resistant metric is **redundancy = dominant ÷ recon-95** (country-
+  dominant components beyond the ~6 genuinely needed), which removes the
+  readout-composition confound (country's share of the readout). Across
+  C = 40/80/120:
+
+  | redundancy | C=40 | C=80 | C=120 | country AUC |
+  |---|---|---|---|---|
+  | order-2 gate | 1.1 | 1.9 | 2.8 | 0.99 |
+  | order-3 **phase** `sin3θ` | 7.0 | 12.7 | **27** | 0.95→0.66 |
+  | order-3 **polynomial** `a³−3ab²` | 0.0 | 0.1 | **0.3** | 0.98 throughout |
+
+  The polynomial cubic **resolves completely** (redundancy ≈0, even below the gate)
+  and stays faithful at every budget, while the phase cubic saturates. Two degree-3
+  codes, opposite behavior → saturation is a property of the **phase geometry**,
+  not of order-3/cubic complexity. This also **kills the by-construction confound**
+  (e2b is a balanced, non-dedicated head) and shows the high-C faithfulness ceiling
+  is *itself* phase-specific (e2b: 0.98 at C=80 where the pinwheel fell to 0.87).
+  `figs/spd_budget_sweep.png`.
 - **Faithfulness caveat — saturation is decoupled from it.** At high C, order-3 SPD
   does not reach full faithfulness (country AUC plateaus ~0.77–0.87 at C=80), and
   **neither more steps (10k→20k) nor lower minimality (Schatten 1.0→0.1→0.01)
@@ -89,11 +110,13 @@ is real. (Seed means shown; full per-seed table in `results/budget/`.)
 > attribution/selection step to find stable structure, specific to the phase
 > geometry, not a statement that the feature is intrinsically more expensive.
 
-(Robustness: the dominant-count saturation is invariant to the minimality
-coefficient — 99–100% across Schatten ∈ {0.01, 0.1, 1.0} at C=80 — so it is not a
-minimality artifact; and it holds at the one fully-faithful budget, C=40. The
-high-C faithfulness ceiling is a separate, decoupled phenomenon — see the
-faithfulness bullet below.)
+(Robustness: saturation is invariant to the minimality coefficient (99–100% across
+Schatten ∈ {0.01, 0.1, 1.0} at C=80 — not a minimality artifact), holds at the
+fully-faithful C=40 budget, and — decisively — is **absent in a polynomial cubic
+of the same degree** (e2b redundancy ≈0 vs phase 7–27), which confirms the
+"specific to the phase geometry" clause by direct test and kills the
+by-construction confound. The high-C faithfulness ceiling is itself phase-specific
+— see the two bullets above.)
 
 ## Task 2 — kill the by-construction confound · **the key correction**
 

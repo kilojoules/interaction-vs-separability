@@ -1,6 +1,9 @@
-"""Aggregate the budget sweep: is country's component count a plateau (genuine
-cost) or does it saturate the budget (never cleanly resolved)?  Reads
-results/budget/<model>_C<C>_sd<seed>.json and prints a table + makes a figure.
+"""Aggregate the budget sweep + the polynomial-cubic control (e2b).
+
+Question: is country's component count a plateau (genuine cost), does it saturate
+the budget (never cleanly resolved), and is saturation specific to PHASE geometry
+or to order-3/cubic in general?  The e2b control (homogeneous cubic, non-dedicated)
+answers the last part.  Reads results/budget/<model>_C<C>_sd<seed>.json.
 
 Run (apd env or base): python experiments/e1c_budget_summary.py
 """
@@ -13,7 +16,9 @@ import matplotlib.pyplot as plt
 ROOT = Path(__file__).resolve().parents[1]
 B = ROOT / "results" / "budget"
 BUDGETS = [40, 80, 120]; SEEDS = [0, 1]
-MODELS = [("order2_model", "order-2 gated", "#e08a1e"), ("order3_pinwheel", "order-3 cubic", "#6a1b9a")]
+MODELS = [("order2_model", "order-2 gated", "#e08a1e"),
+          ("order3_pinwheel", "order-3 phase  (sin 3θ)", "#6a1b9a"),
+          ("e2b_cubic", "order-3 polynomial  (a³−3ab²)", "#1a7a4a")]
 
 
 def load(m, C, s):
@@ -22,55 +27,55 @@ def load(m, C, s):
 
 
 def main():
-    print(f"{'model':<16}{'C':>4}{'sd':>3}{'cAUC_spd':>9}{'recon_rel':>10}"
-          f"{'recon95':>8}{'serves_c':>9}{'dom_c':>6}{'dom_lin':>8}")
+    print(f"{'model':<18}{'C':>4}{'sd':>3}{'cAUC':>7}{'rel':>7}{'recon95':>8}"
+          f"{'dom':>6}{'dom/C':>7}{'redund':>8}")
     agg = {}
     for m, lab, _ in MODELS:
         for C in BUDGETS:
-            rec95s, domc, doml, sv, cauc, rel = [], [], [], [], [], []
+            rec95s, domc, redu, cauc, rel = [], [], [], [], []
             for s in SEEDS:
                 d = load(m, C, s)
-                if d is None:
-                    print(f"{m:<16}{C:>4}{s:>3}   MISSING"); continue
-                print(f"{m:<16}{C:>4}{s:>3}{d['country_auc_spd']:>9.3f}{d['recon_rel']:>10.4f}"
-                      f"{d['recon_k95']:>8}{d['serves_country']:>9}{d['dominant_country']:>6}"
-                      f"{d['dominant_linear_sum']:>8}")
+                if d is None: continue
+                r = d["dominant_country"] / max(d["recon_k95"], 1)
+                print(f"{m:<18}{C:>4}{s:>3}{d['country_auc_spd']:>7.2f}{d['recon_rel']:>7.3f}"
+                      f"{d['recon_k95']:>8}{d['dominant_country']:>6}{d['dominant_country']/C:>7.2f}{r:>8.1f}")
                 rec95s.append(d["recon_k95"]); domc.append(d["dominant_country"])
-                doml.append(d["dominant_linear_sum"]); sv.append(d["serves_country"])
-                cauc.append(d["country_auc_spd"]); rel.append(d["recon_rel"])
+                redu.append(r); cauc.append(d["country_auc_spd"]); rel.append(d["recon_rel"])
             if rec95s:
-                agg[(m, C)] = dict(recon95=rec95s, dom=domc, dom_lin=doml, serves=sv, cauc=cauc, rel=rel)
+                agg[(m, C)] = dict(recon95=rec95s, dom=domc, redund=redu, cauc=cauc, rel=rel)
     print()
-    # plateau vs climb verdict
     for m, lab, _ in MODELS:
-        r = [np.mean(agg[(m, C)]["recon95"]) for C in BUDGETS if (m, C) in agg]
-        dom = [np.mean(agg[(m, C)]["dom"]) for C in BUDGETS if (m, C) in agg]
         Cs = [C for C in BUDGETS if (m, C) in agg]
-        if len(Cs) >= 2:
-            print(f"{lab}: recon95 {[round(x,1) for x in r]} over C={Cs}  "
-                  f"(plateau if ~flat)   |   dominant {[round(x,1) for x in dom]} vs ceilings {Cs}  "
-                  f"(climb if tracks ceiling; frac={[round(d/C,2) for d,C in zip(dom,Cs)]})")
-    (B / "summary.json").write_text(json.dumps(
-        {f"{m}_C{C}": v for (m, C), v in agg.items()}, indent=2))
+        if not Cs: continue
+        red = [np.mean(agg[(m, C)]["redund"]) for C in Cs]
+        print(f"{lab}: redundancy (dom/recon95) {[round(x,1) for x in red]} over C={Cs}")
+    (B / "summary.json").write_text(json.dumps({f"{m}_C{C}": v for (m, C), v in agg.items()}, indent=2))
 
-    # figure
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4.6))
+    # ---- 3-panel figure ----
+    fig, axes = plt.subplots(1, 3, figsize=(15, 4.5))
     for m, lab, col in MODELS:
         Cs = [C for C in BUDGETS if (m, C) in agg]
-        for s in SEEDS:
-            r = [load(m, C, s)["recon_k95"] for C in Cs if load(m, C, s)]
-            ax1.plot(Cs, r, "o", color=col, alpha=0.5, ms=5)
-        rm = [np.mean(agg[(m, C)]["recon95"]) for C in Cs]
-        ax1.plot(Cs, rm, "o-", color=col, lw=2, label=lab)
-        domm = [np.mean(agg[(m, C)]["dom"]) for C in Cs]
-        ax2.plot(Cs, domm, "o-", color=col, lw=2, label=lab)
-    ax1.set_xlabel("budget C (total components)"); ax1.set_ylabel("components to reconstruct country @95%")
-    ax1.set_title("Genuine need (recon-95): plateau?"); ax1.set_ylim(0, None); ax1.grid(alpha=0.25); ax1.legend(fontsize=8)
-    ax2.plot(BUDGETS, BUDGETS, "k:", lw=1, label="ceiling (=C)")
-    ax2.set_xlabel("budget C (total components)"); ax2.set_ylabel("# components dominated by country")
-    ax2.set_title("Country-dominant count: climb toward ceiling?"); ax2.grid(alpha=0.25); ax2.legend(fontsize=8)
-    fig.tight_layout(); fig.savefig(ROOT / "figs" / "spd_budget_sweep.png", dpi=140, bbox_inches="tight")
-    print(f"\nsaved figs/spd_budget_sweep.png")
+        if not Cs: continue
+        r95 = [np.mean(agg[(m, C)]["recon95"]) for C in Cs]
+        dom = [np.mean(agg[(m, C)]["dom"]) for C in Cs]
+        red = [np.mean(agg[(m, C)]["redund"]) for C in Cs]
+        axes[0].plot(Cs, r95, "o-", color=col, lw=2, label=lab)
+        axes[1].plot(Cs, dom, "o-", color=col, lw=2, label=lab)
+        axes[2].plot(Cs, red, "o-", color=col, lw=2, label=lab)
+    axes[0].set_title("Genuine need (recon-95)"); axes[0].set_ylabel("components to reconstruct @95%")
+    axes[0].set_ylim(0, None)
+    axes[1].plot(BUDGETS, BUDGETS, "k:", lw=1, label="ceiling (=C)")
+    axes[1].set_title("Country-dominant count"); axes[1].set_ylabel("# components dominated by country")
+    axes[2].set_title("Redundancy = dominant / recon-95"); axes[2].set_ylabel("country-dominant beyond genuine need")
+    axes[2].axhline(1, color="k", ls=":", lw=1, alpha=0.5)
+    for ax in axes:
+        ax.set_xlabel("budget C (total components)"); ax.grid(alpha=0.25); ax.legend(fontsize=7.5)
+    fig.suptitle("Saturation is specific to PHASE geometry: the phase cubic tracks the budget (redundancy 8–30×); "
+                 "a polynomial cubic of the same degree resolves (≈0×), like the gate",
+                 fontsize=10.5)
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    fig.savefig(ROOT / "figs" / "spd_budget_sweep.png", dpi=140, bbox_inches="tight")
+    print("saved figs/spd_budget_sweep.png")
 
 
 if __name__ == "__main__":
