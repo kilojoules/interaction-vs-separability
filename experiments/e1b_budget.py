@@ -39,5 +39,7 @@ def analyze(model_key, C, seed, sc=1.0, pthdir="results/spd", out_suffix=""):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("model_key"); ap.add_argument("C", type=int); ap.add_argument("seed", type=int)
+    ap.add_argument("--sc", type=float, default=1.0)
     ap.add_argument("--pthdir", default="results/spd"); ap.add_argument("--out-suffix", default="")
-    a = ap.parse_args(); analyze(a.model_key, a.C, a.seed, pthdir=a.pthdir, out_suffix=a.out_suffix)
+    a = ap.parse_args()
+    analyze(a.model_key, a.C, a.seed, sc=a.sc, pthdir=a.pthdir, out_suffix=a.out_suffix)

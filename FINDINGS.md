@@ -63,13 +63,18 @@ is real. (Seed means shown; full per-seed table in `results/budget/`.)
   stays a low fraction (~15%) at order-2: the attribution decomposition never
   resolves the cubic feature into a bounded set of dominant components — it smears
   it across whatever budget it is given.
-- **Faithfulness caveat → resolved by longer reruns.** At 10k steps order-3 SPD
-  degraded at higher C (country AUC 0.95→0.66–0.87) while order-2 stayed faithful.
-  Re-running order-3 at C=80/120 for **30k steps** restores faithfulness and the
-  saturation persists: `[RERUN PENDING — country AUC and dominant/C to fill]`.
-  Saturation was already visible at the faithful C=40 point (38/40 = 95% at AUC
-  0.95) and in both seeds (38/38, 79/78, 120/120), so it was never merely
-  underfitting.
+- **Faithfulness caveat — saturation is decoupled from it.** At high C, order-3 SPD
+  does not reach full faithfulness (country AUC plateaus ~0.77–0.87 at C=80), and
+  **neither more steps (10k→20k) nor lower minimality (Schatten 1.0→0.1→0.01)
+  restores it** — dropping Schatten actually *worsened* reconstruction, so the
+  ceiling is an optimization/conditioning effect (the country logit is the
+  worst-reconstructed output: the cubic is what SPD struggles to fit), not a
+  minimality effect. Crucially, **saturation survives all of it**: dominant/C =
+  99–100% across Schatten ∈ {0.01, 0.1, 1.0}, steps ∈ {10k, 20k}, and faithfulness
+  0.66→0.95 — and = 95% at the one fully-faithful budget (C=40, AUC 0.95). So
+  saturation is **neither a minimality artifact nor an underfitting artifact**: it
+  holds at the faithful anchor and is invariant to every knob that could have
+  manufactured it.
 - **Seeds.** recon-95 stable to ±1–2; order-3 dominant saturates in both seeds;
   order-2 dominant noisier but always a low budget fraction.
 
@@ -84,8 +89,11 @@ is real. (Seed means shown; full per-seed table in `results/budget/`.)
 > attribution/selection step to find stable structure, specific to the phase
 > geometry, not a statement that the feature is intrinsically more expensive.
 
-(The faithfulness caveat for order-3 at high C is removed by the longer-trained
-reruns — see the row below.)
+(Robustness: the dominant-count saturation is invariant to the minimality
+coefficient — 99–100% across Schatten ∈ {0.01, 0.1, 1.0} at C=80 — so it is not a
+minimality artifact; and it holds at the one fully-faithful budget, C=40. The
+high-C faithfulness ceiling is a separate, decoupled phenomenon — see the
+faithfulness bullet below.)
 
 ## Task 2 — kill the by-construction confound · **the key correction**
 
