@@ -112,12 +112,22 @@ target:
 |---|---|---|---|---|---|
 | `e2`  θ from emb-PCA, `sign(sin3θ)`     | **0.795** (SGD can't fit) | 0.79 | 0.89 | — | 0.43 |
 | `e2b` homogeneous cubic `a³−3ab²`       | **0.979** | **0.979 (NOT blind)** | 0.77 | **24** | 0.71 |
+| `order3_xor` gated `a⊕b⊕c` (number⊕color⊕person) | **0.988** | **0.988 (NOT blind)** | 0.89 | **24** | — |
 | (ref) `order3_pinwheel` `sign(sin3θ)`, constructed | 0.979 | **0.53 (blind)** | 0.13 | 32 | dedicated |
 
-**This is where the attack bites.** Two *genuinely cubic* (degree-3) country codes
-with matched accuracy (0.979) give **opposite** first-order behavior:
-`sign(sin3θ)` is blind (`<r,L>`=0.53); the homogeneous polynomial `a³−3ab²` is
-**not** (`<r,L>`=0.979). So:
+**This is where the attack bites — now a 3-point confirmation.** *Three* genuinely
+third-order country codes — phase `sin3θ`, polynomial `a³−3ab²`, gated/XOR
+`a⊕b⊕c` — at matched accuracy. **Only the phase one is first-order-blind**
+(`<r,L>`=0.53); both the polynomial (0.98) and the gated XOR (0.99) are fully
+recoverable. The XOR-3 is decisive against a "degree" explanation: it is an
+*irreducibly* third-order interaction (the parity / degree-3 monomial), yet
+piecewise-linear, so its per-input gradient stays informative. **Blindness tracks
+*phase geometry*, not interaction order.** And on the decomposition axis, XOR-3
+behaves like the other non-phase codes — **faithful at every budget (0.99 at
+C=40/80/120) with a bounded PR (~7–9)** — so the phase code's faithfulness ceiling
+is *also* phase-specific. (`results/task6/`, `results/country_only/order3_xor_*`.)
+
+Further notes:
 
 - **The cubic spreads across more elementary ReLU units** (24–32 first-order
   *hidden units* to reconstruct vs ~6 for a linear/gated feature), in the

@@ -11,7 +11,8 @@ B = ROOT / "results" / "country_only"
 BUD = [40, 80, 120]
 MODELS = [("order2_model", "order-2 gate", "#e08a1e"),
           ("order3_pinwheel", "order-3 phase  (sin 3θ)", "#6a1b9a"),
-          ("e2b_cubic", "order-3 polynomial  (a³−3ab²)", "#1a7a4a")]
+          ("e2b_cubic", "order-3 polynomial  (a³−3ab²)", "#1a7a4a"),
+          ("order3_xor", "order-3 gated/XOR  (a⊕b⊕c)", "#2e86c1")]
 
 
 def get(m, C, k):

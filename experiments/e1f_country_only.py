@@ -21,7 +21,8 @@ from spd.run_spd import Config, TMSTaskConfig, optimize
 from spd.utils import set_seed
 BDC = Path("/Users/julianquick/bdc/bluedot-tais-puzzle")
 REG = {"order2_model": BDC/"model.pt", "order3_pinwheel": BDC/"model_pinwheel.pt",
-       "e2b_cubic": ROOT/"models"/"nondedicated_clean_cubic.pt"}
+       "e2b_cubic": ROOT/"models"/"nondedicated_clean_cubic.pt",
+       "order3_xor": ROOT/"models"/"order3_xor.pt"}
 
 
 def country_target(ckpt):
@@ -58,6 +59,8 @@ def run(model_key, C, seed=0, steps=10000):
     L_tr, _ = R.compute_L(ckpt, tr["emb"]); L_te, _ = R.compute_L(ckpt, te["emb"])
     if model_key == "e2b_cubic":
         yc = np.load(ROOT/"results"/"task2"/"cubic_labels.npz")["c_te"]
+    elif model_key == "order3_xor":
+        y = te["labels"]; yc = (y[:, 0] ^ y[:, 2] ^ y[:, 6]).astype(np.int64)  # number^color^person
     else:
         yc = te["labels"][:, A.CI]
     target = country_target(ckpt)

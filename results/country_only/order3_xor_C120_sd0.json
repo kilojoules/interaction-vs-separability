@@ -1,0 +1,11 @@
+{
+  "model_key": "order3_xor",
+  "C": 120,
+  "seed": 0,
+  "country_auc_target": 0.9879708977356984,
+  "country_auc_spd": 0.9862562738835339,
+  "PR_effective_components": 9.136102469736013,
+  "PR_frac": 0.0761341872478001,
+  "recon_k95": 7,
+  "n_eff_above_5pct": 10
+}
