@@ -120,20 +120,21 @@ the top of each file — point it at your checkout.
 
 ## Method notes / honesty
 
-- **The central (order-3) result is budget *saturation*, measured budget-robustly.**
-  We sweep the total component budget (C = 40/80/120, 2 seeds) and track two
-  metrics: *recon-95* (components needed to reconstruct the feature to 95% of full
-  AUC) and the *dominant-component count*. recon-95 is flat at ~5–6 for both
-  features; the dominant count tracks the budget (95–100%) only for the phase
-  feature, vs a stable ~15% for the gated one. Saturation is invariant to a 100×
-  minimality (Schatten) sweep and a 2× step sweep — so it is **not** a
-  regularization or underfitting artifact, only a clean faithful anchor (C=40).
+- **The central geometry-specific result is the attribution-axis blindness**, not
+  a decomposition-axis count. On the decomposition axis we find only: APD is
+  faithful at every order, and the feature resolves into a small bounded set of
+  components everywhere (recon-95 ~2–7; country-only effective-component count
+  plateaus far below the budget — `figs/spd_country_only.png`). **No saturation, no
+  inflation.** A modest, bounded dimensionality difference and a phase-only
+  faithfulness ceiling remain.
+- **We withdrew two successive decomposition-axis claims as confounded:** "2× /
+  38-of-40 rank inflation" (metric-fragile), then "budget saturation" (the
+  `dominant = argmax-over-8-outputs` count is driven by readout composition, not
+  geometry). The confound-free country-only re-test shows no saturation. Lesson:
+  **component-count metrics on a shared multi-output readout are confounded** —
+  isolate the feature or stay on the attribution axis.
 - **The order-2 *gated* dissociation is a corroborated side-claim**, reproduced by
   three independent instruments: the first-order reader (gradient+PCA), a causal
   hidden-unit analysis (no gradients, no PCA), and the real APD/SPD solver.
-- We measure separability on axes that **do not reduce to rank** (reader
-  stability, a fixed-vs-flexible reconstruction gap, causal single-component
-  ablation, SPD component counts) — and we **withdrew** the earlier
-  "2× / 38-of-40 rank inflation" framing as metric-fragile.
 - Every place the plan met the code's reality is logged in `FINDINGS.md`
   (Divergences) and bounded in `LIMITATIONS.md`.
