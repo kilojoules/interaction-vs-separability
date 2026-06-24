@@ -1,23 +1,29 @@
 # Does feature interaction degrade the separability of parameter decomposition?
 
-A toy-scale, ground-truth-known **steelman** of an interpretability claim: that as
-the *interaction order* of a feature's encoding rises, it becomes harder to
-decompose the responsible weights into a small set of stable, feature-aligned
-**parameter components** — even while reconstruction stays cheap.
+A toy-scale, ground-truth-known study of how a feature's **encoding geometry** affects
+how cleanly its weights decompose. We started from an *interaction-order* hypothesis
+(higher order → harder to decompose) but — after running the real APD/SPD solver and a
+multi-agent adversarial audit (`AUDIT.md`) that overturned three of our own framings —
+the finding sharpened to: it is the **encoding geometry**, not the order, that matters,
+and a **smooth periodic ("phase") code is the unique outlier** (full result in the claim
+box below).
 
-The setup is the BlueDot "pinwheel" puzzle head: a frozen MiniLM encoder + a small
-MLP that predicts 8 binary text features. Seven features are linear at the analyzed
-layer **L**; one (country) is re-encoded with controllable interaction order:
+The setup is the BlueDot "pinwheel" puzzle head: a frozen MiniLM encoder + a small MLP
+predicting 8 binary text features. Seven are linear at the analyzed layer **L**; the
+country feature is re-encoded several ways — and crucially, at the **same degree** (3) we
+compare three *different geometries*:
 
-| order | encoding | country logit is … |
+| encoding | country logit is … | role |
 |---|---|---|
-| 1 | linear | one direction in L |
-| 2 | gated sign-flip on `food ⊕ sentiment` | a reader that switches with a 2-feature gate |
-| 3 | phase parity `sign(sin 3θ)` | a cubic function of a 2-D carrier plane |
+| order-1 linear | one direction in L | baseline |
+| order-2 **gate** `food⊕sentiment` | a reader switched by a 2-feature gate | low-order control |
+| order-3 **phase** `sign(sin 3θ)` | a smooth periodic function of a 2-D plane | **the outlier** |
+| order-3 **polynomial** `a³−3ab²` | a homogeneous cubic of two linear margins | same-degree control |
+| order-3 **gated/XOR** `a⊕b⊕c` | a 3-way parity | same-degree control |
 
-The decomposition **target** is the readout stack `net.layers[6:]`
-(`L(64) → 64 → ReLU → 8 logits`); in the order-3 model the nonlinear country
-machinery lives entirely there.
+Decomposition **target** = readout `net.layers[6:]` (`L(64) → 64 → ReLU → 8 logits`).
+The real solver is Apollo's `spd`/APD `optimize()`; the cheap first-order instrument is a
+parameter-Jacobian "reader."
 
 ## The claim, stated at the strength the evidence licenses
 
@@ -96,8 +102,11 @@ experiments/
   e2_train_nondedicated.py / e2b_clean_cubic.py / e6_order3_xor.py  order-3 controls
   e4_nongradient_gap.py / e5_blind_prediction.py  order-2 gated dissociation + blind test
 models/   trained checkpoints + the training scripts that produce them
-results/  JSON outputs per experiment       figs/  figures
-FINDINGS.md  LIMITATIONS.md  STEELMAN_MEMO.md
+results/  JSON outputs per experiment       figs/  figures (spd_pareto.png = current headline)
+FINDINGS.md       full results, with the "what we withdrew" history
+STEELMAN_MEMO.md  per-claim verdict ledger (proposal seed)
+LIMITATIONS.md    what this does and does not show
+AUDIT.md          the adversarial audit that reshaped the claims
 ```
 
 ## Reproduce
