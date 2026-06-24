@@ -104,6 +104,30 @@ def run(args):
         rep["recon_curve"] = [float(a) for a in aucs]   # AUC vs #components kept (the Pareto frontier)
         # Pareto area = normalized faithfulness deficit when constrained to few components
         rep["pareto_area"] = float(np.mean([full - a for a in aucs]) / (full + 1e-9))
+        # M5 fix: ISOLATED country-projection count -- rank/keep components by the effect of
+        # their mlp_out (64->1 country) part ONLY, so the shared full-rank mlp_in split does not
+        # inflate the count. Ablate only mlp_out[c]; reconstruct the country logit with that
+        # subset's mlp_out (mlp_in shared/intact).
+        with torch.no_grad():
+            full_c = spd(Xte).squeeze(-1).squeeze(-1).numpy()
+            e_iso = np.zeros(args.C)
+            for c in range(args.C):
+                Ao = spd.mlp_out.A.data[:, c].clone(); Bo = spd.mlp_out.B.data[:, c].clone()
+                spd.mlp_out.A.data[:, c] = 0; spd.mlp_out.B.data[:, c] = 0
+                abl = spd(Xte).squeeze(-1).squeeze(-1).numpy()
+                spd.mlp_out.A.data[:, c] = Ao; spd.mlp_out.B.data[:, c] = Bo
+                e_iso[c] = np.sqrt(((full_c - abl) ** 2).mean())
+            order_i = np.argsort(-e_iso); aucs_i = []
+            Af = spd.mlp_out.A.data.clone(); Bf = spd.mlp_out.B.data.clone()
+            keepmask = torch.zeros(args.C, dtype=torch.bool)
+            for k in range(1, args.C + 1):
+                keepmask[:] = False; keepmask[order_i[:k]] = True
+                # mlp_in stays FULL; only mlp_out keeps the top-k country-readout components
+                spd.mlp_out.A.data[:, ~keepmask] = 0; spd.mlp_out.B.data[:, ~keepmask] = 0
+                z = spd(Xte).squeeze(-1).squeeze(-1).numpy()
+                aucs_i.append(A.auc(z, yc))
+                spd.mlp_out.A.data.copy_(Af); spd.mlp_out.B.data.copy_(Bf)
+        rep["recon_k95_isolated"] = int(next((k for k, a in enumerate(aucs_i, 1) if a >= 0.95 * aucs_i[-1]), args.C))
     tag = (f"{args.model}_C{args.C}_st{args.steps}_lr{args.lr}_sd{args.seed}_un{args.unit_norm}_is{args.init_scale}"
            f"_{args.init_type[:3]}_pm{args.pm}_sc{args.schatten}_tk{args.topk}_{args.sched}"
            f"_m{args.m}_{'multi' if args.multi else 'co'}")
