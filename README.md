@@ -55,6 +55,20 @@ parameter-Jacobian "reader."
 See `FINDINGS.md` for the headline tables and `LIMITATIONS.md` for what this does
 and does not show.
 
+## Visual summary
+
+![geometry vs decomposition trade-off](figs/spd_geometry_pareto.png)
+
+Per encoding: **left** = the country active subspace (project `L` onto the top-2
+eigenvectors of the country-logit gradient covariance, colored by country) — the phase
+code shows the **pinwheel sectors** of `sign(sin 3θ)`, while linear is a 1-D split and the
+others show gated/cubic/parity structure. **Right** = the faithfulness↔minimality frontier
+(country AUC vs fraction of components kept), one contour per Schatten "simplicity" level.
+Only the **phase** frontier collapses under minimality pressure (full-model country AUC
+drops to 0.54–0.92, and erratically — its seed/optimization fragility); gate/poly/xor stay
+faithful (0.98–0.99) at *every* simplicity level. (`experiments/e9_geometry.py`,
+`e10_geometry_pareto_figure.py`.)
+
 ## Which solver, and which axis (methods)
 
 **Which solver?** — All decomposition-axis numbers come from **Apollo's
