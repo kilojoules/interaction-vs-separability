@@ -46,12 +46,12 @@ def main():
         area = d.get("pareto_area", float(np.mean(full - curve) / (full + 1e-9)))
         rr = d["recon_rel"]; iso = d.get("recon_k95_isolated")
         rows.append((m, lab, d["country_auc_spd"], rr, d["recon_k95"], iso, area))
-        ax.plot(k / len(curve), curve, "-", color=col, lw=2,
+        ax.plot(k, curve, "-", color=col, lw=2,
                 label=f"{lab}  area={area:.2f}, recon_rel={rr:.3f}")
-        ax.fill_between(k / len(curve), curve, full, color=col, alpha=0.10)
+        ax.fill_between(k, curve, full, color=col, alpha=0.10)
     for m, lab, fa, rr, r95, iso, area in sorted(rows, key=lambda r: -r[6]):
         print(f"{lab:<28}{fa:>9.3f}{rr:>10.3f}{r95:>9}{str(iso):>7}{area:>8.3f}")
-    ax.set_xlabel("fraction of components kept  (greedy, by causal country effect →)")
+    ax.set_xlabel("# components kept (of 40, greedy by causal country effect)")
     ax.set_ylabel("country AUC reached")
     ax.set_title("Reconstruction-spread frontier per code (pure-reconstruction factorization)\n"
                  "shaded = area below own ceiling.  NOTE: not at matched faithfulness — see recon_rel.")

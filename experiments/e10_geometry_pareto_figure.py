@@ -23,8 +23,8 @@ def curve(code, sc):
     for p in S.glob(f"{code}_C40_st10000_lr0.001_sd0_*_sc{sc}_tk{tk}_*_co.json"):
         d = json.loads(p.read_text())
         if "recon_curve" in d:
-            return np.array(d["recon_curve"]), d["country_auc_spd"]
-    return None, None
+            return np.array(d["recon_curve"]), d["country_auc_spd"], d["country_auc_target"]
+    return None, None, None
 
 
 def main():
@@ -47,22 +47,24 @@ def main():
             axg.set_xticks([]); axg.set_yticks([])
             axg.set_aspect("equal"); axg.set_xlim(-lim, lim); axg.set_ylim(-lim, lim)
             if r == 0: axg.legend(fontsize=6.5, markerscale=2, loc="upper right")
-        # RIGHT: Pareto contours
-        any_c = False
+        # RIGHT: Pareto contours (absolute country AUC vs # components — NOT normalized)
+        any_c = False; ceil = None; ncomp = 40
         for sc, slab, col in LAMBDAS:
-            c, full = curve(code, sc)
+            c, full, tgt = curve(code, sc)
             if c is None: continue
-            any_c = True
-            k = np.arange(1, len(c) + 1) / len(c)
-            axp.plot(k, c, "-", color=col, lw=1.8, label=f"{slab} (full {full:.2f})")
+            any_c = True; ceil = tgt; ncomp = len(c)
+            axp.plot(np.arange(1, len(c) + 1), c, "-", color=col, lw=1.8,
+                     label=f"{slab}  → {full:.2f}")
         if any_c:
-            axp.set_ylim(0.45, 1.02); axp.legend(fontsize=6.5, loc="lower right")
+            axp.axhline(ceil, ls="--", color="0.35", lw=1.0, label=f"model ceiling {ceil:.2f}")
+            axp.set_ylim(0.45, 1.02); axp.set_xlim(0, ncomp)
+            axp.legend(fontsize=6.2, loc="lower right")
         else:
             axp.text(0.5, 0.5, "country is 1-D\n(trivially decomposed)", ha="center", va="center",
                      fontsize=9, transform=axp.transAxes)
         axp.set_title("faithfulness ↔ minimality frontier", fontsize=9)
-        axp.set_xlabel("fraction of components kept  (parsimony →)", fontsize=8)
-        axp.set_ylabel("country AUC", fontsize=8); axp.grid(alpha=0.2)
+        axp.set_xlabel("# components kept (of 40, greedy by causal effect)", fontsize=8)
+        axp.set_ylabel("country AUC (absolute)", fontsize=8); axp.grid(alpha=0.2)
     fig.suptitle("Encoding geometry (left) vs decomposition trade-off (right) — the phase code's "
                  "frontier alone collapses under minimality", fontsize=11)
     fig.tight_layout(rect=[0, 0, 1, 0.985])

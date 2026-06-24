@@ -63,7 +63,8 @@ Per encoding: **left** = the country active subspace (project `L` onto the top-2
 eigenvectors of the country-logit gradient covariance, colored by country) — the phase
 code shows the **pinwheel sectors** of `sign(sin 3θ)`, while linear is a 1-D split and the
 others show gated/cubic/parity structure. **Right** = the faithfulness↔minimality frontier
-(country AUC vs fraction of components kept), one contour per Schatten "simplicity" level.
+(absolute country AUC vs number of components kept; dashed line = the model's own country
+AUC ceiling), one contour per Schatten "simplicity" level.
 Only the **phase** frontier collapses under minimality pressure (full-model country AUC
 drops to 0.54–0.92, and erratically — its seed/optimization fragility); gate/poly/xor stay
 faithful (0.98–0.99) at *every* simplicity level. (`experiments/e9_geometry.py`,
