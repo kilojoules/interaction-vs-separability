@@ -4,9 +4,11 @@ A toy-scale, ground-truth-known study of how a feature's **encoding geometry** a
 how cleanly its weights decompose. We started from an *interaction-order* hypothesis
 (higher order → harder to decompose) but — after running the real APD/SPD solver and a
 multi-agent adversarial audit (`AUDIT.md`) that overturned three of our own framings —
-the finding sharpened to: it is the **encoding geometry**, not the order, that matters,
-and a **smooth periodic ("phase") code is the unique outlier** (full result in the claim
-box below).
+the picture narrowed to: a **smooth periodic ("phase") code is the apparent outlier**
+among the encodings tested. Whether that reflects phase *geometry* specifically (rather
+than this single hand-built construction or n=1 / seed noise) is the open question, not a
+settled result; "geometry, not interaction order" is the **working hypothesis** (full
+result and caveats in the claim box below).
 
 The setup is the BlueDot "pinwheel" puzzle head: a frozen MiniLM encoder + a small MLP
 predicting 8 binary text features. Seven are linear at the analyzed layer **L**; the
@@ -27,8 +29,9 @@ parameter-Jacobian "reader."
 
 ## The claim, stated at the strength the evidence licenses
 
-> A feature's **encoding geometry** affects how cleanly its readout decomposes, and a
-> **smooth periodic (phase) code** is the unique outlier on two axes:
+> Among the encodings tested, a **smooth periodic (phase) code** is the **apparent outlier
+> on two axes** (mechanism not established — whether phase *geometry* drives this rather than
+> the single construction or seed noise is the open question; see the per-axis caveats):
 > 1. **Attribution axis (blindness, SURVIVES-WITH-CAVEAT):** first-order attribution
 >    `<r,L>` is blind to the phase code — its first-order reconstruction reaches country
 >    AUC only **0.53** (vs the model's 0.98) — but recovers the polynomial (**0.98**) and
