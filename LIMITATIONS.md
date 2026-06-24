@@ -1,51 +1,52 @@
 # Limitations — what this does and does not show
 
-**Toy scale, by design.** Everything here is a frozen MiniLM encoder + a tiny MLP
-on 8 binary features. The point is *controlled* contrast with **known ground
-truth**, not scale. Nothing here demonstrates behavior in real LLMs.
+**Toy scale, by design.** A frozen MiniLM encoder + a tiny 8-output MLP. The point is
+*controlled* contrast with **known ground truth**, not scale. Nothing here demonstrates
+behavior in real LLMs; cross-scale transfer is a hypothesis, not a result.
 
-**The order-3 model is dedicated *by construction*.** `order3_pinwheel.pt` was
-built with a decoupled, country-dedicated phase bank (block-diagonal). So its
-*component dedication* and its high cross-seed MMCS are partly construction
-artifacts, not emergent properties. Task 2 partially de-confounds this: a
-non-dedicated, from-scratch homogeneous-cubic model (`e2b`, AUC 0.979) still
-spreads across more elementary ReLU units (24 vs ~6) — but note (per the Task-1
-budget sweep) this is a *hidden-unit* granularity effect, **not** an SPD-component
-reconstruction-cost effect; at the SPD-component level the feature reconstructs
-from ~5–6 components at every order, and the order-3 signature is budget
-*saturation*, not a higher count. And **first-order blindness does NOT transfer**: the
-homogeneous cubic is fully first-order-recoverable (`<r,L>`=0.979), while the
-constructed `sin3θ` phase code is blind (0.53). Blindness is therefore a property
-of the *phase/periodic encoding geometry*, not of interaction order or of any
-particular architecture — and the phase regime did not emerge from ordinary SGD
-at all (order-3 `sin3θ` plateaued at 0.795, order-4 at 0.565). See FINDINGS
-Task 2 for numbers.
+**The phase result is n=1 and dedicated *by construction*.** The only phase model is the
+hand-built `model_pinwheel.pt` (decoupled, country-dedicated block-diagonal phase bank).
+SGD never produced a clean from-scratch phase code (order-3 `sin3θ` plateaus at AUC 0.795
+and is *not* blind; order-4 `sin4θ` reaches 0.565). So **"phase geometry" co-varies with
+"dedicated construction"** and the two cannot be fully separated. The genuinely
+confound-free part is the *degree control*: the polynomial `a³−3ab²` and gated/XOR
+`a⊕b⊕c` are from-scratch, same degree, and both first-order-recoverable and
+faithfully-and-parsimoniously decomposable.
 
-**"Reconstruction" of the first-order reader uses privileged information.** The
-rank-K reader-subspace reconstruction is computed *with* the per-input model
-gradient, so it measures reconstruction fidelity of the reader cloud, not a
-deployable probe. The causal hidden-unit reconstruction (Task 4) and the real SPD
-solver (Task 1) do not have this caveat and corroborate the same dissociation.
+**The blindness "controls" are matched on degree, not on L-nonlinearity.** The polynomial
+and XOR are first-order-recoverable largely because the trained readout **linearizes them
+in L** (fixed linear probe 0.95 / 0.91 vs phase 0.55). They are genuinely nonlinear in the
+raw embedding (0.69 / 0.53), so they are not trivial — but the honest claim is "phase is
+blind while degree-3 codes the readout linearizes in L are not," not a clean
+geometry-vs-everything separation. The mechanism is ReLU-region offset cancellation
+(within a cell `z = <r,L> + c`, the offset carries the signal); Euler's identity is an
+analogy for the polynomial, not the operative mechanism.
 
-**Single checkpoints per order (plus seed-1 for SPD stability).** The order-2/3
-target models are individual checkpoints, not ensembles; subsample bootstraps and
-(for SPD) seed-1 reruns stand in for retrain variation.
+**The decomposition-axis result is NOT at matched faithfulness, and the component count is
+metric-dependent.** Even at its best the phase decomposition has `recon_rel ≈ 0.03` vs the
+others' `≤ 0.001`, so its large reconstruction-spread area is *inseparable* from its
+poorer reconstructability. The "minimality" recon-curve is run in pure-reconstruction mode
+(no minimality objective); the actual-minimality result is the separate observation that
+only phase loses faithfulness under top-k+Schatten. The raw component *count* is inflated
+by the shared full-rank `mlp_in` (isolating the country projection drops phase 34→13, gate
+17→1), so we lead with the area and the under-minimality faithfulness, not a count. Phase
+is the outlier on every metric; the fine ordering among non-phase codes is not robust.
 
-**The claim is about a method family, not impossibility.** We show that a
-*first-order / linear* parameter decomposition cannot carry country in one stable
-component, and that the real APD/SPD solver needs more components at higher order.
-We do **not** claim no faithful decomposition exists: a nonlinear, higher-rank
-decomposition reconstructs country at every order. "Non-separable" here always
-means "not parsimoniously separable by first-order attribution at these budgets,"
-never "no decomposition exists."
+**The faithfulness "ceiling" is fragility, not a wall.** Phase reaches AUC ~0.96–0.977
+under a careful, parsimony-free recipe, but is seed-unstable (lr=3e-3 seeds 0.85/0.77/0.64)
+and lr-fragile. An earlier "unmovable ceiling" claim was wrong and is withdrawn.
 
-**Generalization to trained (non-toy) models is proposed, not shown.** We give a
-mechanism (first-order attribution is blind to signal stored in ReLU-region
-offsets; interaction inflates component count) that *should* transfer, but we have
-not tested it outside this toy. Treat the cross-scale claim as a hypothesis.
+**Mostly single-seed; AUC noise is real.** Most numbers are single-seed (areas checked on
+2). AUC on 1500 test points has a ~±0.005 Hanley–McNeil SE, so the *large-margin* claims
+(blindness 0.45 gap; area 3–25×) are safe but the *faithfulness* gaps (e.g. 0.961 vs 0.979)
+are within ~2× the CI and swamped by seed variance — do not lean on them.
 
-**SPD hyperparameters are not exhaustively tuned.** We use the resid-MLP recipe
-(batch-topk, Schatten minimality, param-match + topk-recon + act-recon) with a
-modest sweep of the minimality coefficient (Task 3). Component counts depend on
-the alive-threshold and the topk budget; we report the thresholds and show the
-sweep so the trend (not a single number) carries the claim.
+**Three withdrawn decomposition-axis framings.** "Rank inflation" (metric-fragile), "budget
+saturation" (readout-composition-confounded), and "no effect / recon-95 ~6 everywhere"
+(measured on an unfaithful phase decomposition) were each asserted and then withdrawn. See
+FINDINGS "What we withdrew" and `AUDIT.md`. The lesson — component-count metrics on a
+shared multi-output readout are treacherous — is itself a finding.
+
+**Not impossibility.** Every code is faithfully decomposable; what is phase-specific is the
+*cost/tension* and (for first-order attribution) the *blindness*. We never claim no
+decomposition exists.

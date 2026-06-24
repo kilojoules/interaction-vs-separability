@@ -21,22 +21,29 @@ machinery lives entirely there.
 
 ## The claim, stated at the strength the evidence licenses
 
-> **The clean geometry-specific effect is on the *attribution* axis, not the
-> decomposition axis.** Run with the real APD solver, the country readout
-> decomposes **faithfully** at every order and the feature **resolves into a small,
-> bounded set of components at every order and geometry** (recon-95 ~2–7; the
-> country-only effective-component count plateaus far below the budget) — **no
-> saturation, no rank inflation**. What *is* phase-specific is that **first-order
-> attribution is blind to phase/periodic codes** (the gradient is tangential to the
-> level sets) while it fully recovers a homogeneous polynomial of the *same degree*.
-> A modest, bounded dimensionality difference remains (phase spans somewhat more
-> components), and the phase code uniquely resists *faithful* high-budget
-> decomposition. Side-claim: the order-2 gated feature is separable only
-> **conditional on the features it interacts with**.
+> A feature's **encoding geometry** affects how cleanly its readout decomposes, and a
+> **smooth periodic (phase) code** is the unique outlier on two axes:
+> 1. **Attribution axis (blindness, SURVIVES-WITH-CAVEAT):** first-order attribution
+>    `<r,L>` is blind to the phase code (country AUC **0.53**) but recovers the
+>    polynomial (**0.98**) and gated/XOR (**0.99**) codes of the *same degree*. Caveat:
+>    those controls are recoverable because the readout **linearizes them in L** (fixed
+>    probe 0.95/0.91), and the only blind model is **dedicated by construction** — so it's
+>    "phase blind while linearized degree-3 codes are not," not confound-free.
+> 2. **Decomposition axis (faithfulness↔parsimony tension):** under the **real APD
+>    minimality objective** only phase loses faithfulness (country AUC **0.68–0.90** vs
+>    **0.98–0.99**); **without** minimality, phase reaches faithfulness only via a
+>    high-rank, many-component interpolation (reconstruction-spread area **0.33** vs
+>    ≤0.11). NOT measured at matched faithfulness; the count is metric-dependent; phase
+>    is the outlier but the fine ordering among non-phase codes is not robust.
 >
-> *(An earlier version of this claim asserted budget "saturation" on the
-> decomposition axis; that rested on a `dominant = argmax-over-8-outputs` metric
-> confounded by readout composition, and is **withdrawn** — see FINDINGS Task 1.)*
+> Both stem from a smooth nonlinearity resisting *sparse linear decomposition* and
+> *first-order gradients* alike. This is about cost/visibility, **not** impossibility, on
+> a single construction-dependent phase model at toy scale.
+>
+> *(Three earlier decomposition-axis framings were **withdrawn** — "rank inflation"
+> (metric-fragile), "budget saturation" (readout-composition confound), and "no effect /
+> recon-95 ~6 everywhere" (measured on an unfaithful phase decomposition). See FINDINGS
+> "What we withdrew" and `AUDIT.md`.)*
 
 See `FINDINGS.md` for the headline tables and `LIMITATIONS.md` for what this does
 and does not show.
@@ -56,18 +63,17 @@ metrics (blindness, reader alignment, nonlinear-unit count in Tasks 2/4/5).
 Component effects are read off the *trained* APD components by **causal ablation**
 (`set_subnet_to_zero`), not gradients.
 
-**Two metrics, and why one was withdrawn.** A `dominant = argmax-over-8-outputs`
-metric showed country tracking the budget at order-3 (95–100% of C) — but it is
-**confounded by readout composition** (the phase model's readout is country-heavy
-by construction, so nearly every component is nominally country-dominant). The
-confound-free re-test decomposes the **country-only readout** (single output, no
-argmax) and measures the participation ratio of per-component country effect: it
-**plateaus far below the budget for every encoding** (`figs/spd_country_only.png`),
-so there is **no saturation**. The `dominant`/redundancy result (incl. the e2b
-"redundancy 0 vs 7–27" contrast) is therefore **withdrawn** as confounded and kept
-only for completeness in `figs/spd_budget_sweep.png`. The clean decomposition-axis
-finding is just: faithful + bounded resolution (~2–7 components) everywhere; the
-geometry-specific signal is the attribution-axis blindness.
+**Which decomposition metric (and three that were withdrawn).** The current
+decomposition-axis result uses two faithfulness-grounded measures: (i) country AUC of
+the full SPD model **under the real minimality objective** (top-k+Schatten), and (ii)
+the **reconstruction-spread area** of the recon-curve with `recon_rel` reported
+(`experiments/e7_phase_faithfulness_stress.py`, `e8_pareto_figure.py`,
+`figs/spd_pareto.png`). Three *count*-based framings were tried and **withdrawn** as
+confounded — `dominant=argmax-over-8` "saturation" (readout-composition;
+`figs/spd_budget_sweep.png`, kept only as the confounded example), the country-only
+"no saturation / recon-95 ~6" (measured on an *unfaithful* phase solve;
+`figs/spd_country_only.png`), and "rank inflation." The lesson — component-*count*
+metrics on a shared multi-output readout are treacherous — is in FINDINGS and `AUDIT.md`.
 
 ## What's here
 
@@ -81,13 +87,13 @@ experiments/
   e1_spd_decompose.py  run the REAL APD/SPD solver on a readout (Task 1)
   e1b_budget.py /      budget sweep C=40/80/120 (dominant-count: CONFOUNDED metric,
   e1c_budget_summary.py  withdrawn) -> figs/spd_budget_sweep.png
-  e1f_country_only.py / confound-free country-only decomposition (PR vs budget)
-  e1g_country_only_figure.py  -> figs/spd_country_only.png  (no saturation)
-  e1_figure.py         aggregate Task-1 runs -> figs/spd_components.png
-  e2_train_nondedicated.py / e2b_clean_cubic.py  non-dedicated order-3 (Task 2)
-  e3_sweep_figure.py   minimality sweep (Task 3 — no tension found)
-  e4_nongradient_gap.py  re-derive the gap with no gradients / no PCA (Task 4)
-  e5_blind_prediction.py blind prediction on new structures (Task 5)
+  e1f_country_only.py / e1g_country_only_figure.py  country-only decomposition
+                       (-> figs/spd_country_only.png; the "no saturation" reading
+                       was WITHDRAWN — unfaithful-phase artifact)
+  e7_phase_faithfulness_stress.py  stress sweep + faithfulness/parsimony measures
+  e8_pareto_figure.py  faithfulness<->parsimony Pareto -> figs/spd_pareto.png  (CURRENT)
+  e2_train_nondedicated.py / e2b_clean_cubic.py / e6_order3_xor.py  order-3 controls
+  e4_nongradient_gap.py / e5_blind_prediction.py  order-2 gated dissociation + blind test
 models/   trained checkpoints + the training scripts that produce them
 results/  JSON outputs per experiment       figs/  figures
 FINDINGS.md  LIMITATIONS.md  STEELMAN_MEMO.md
@@ -120,21 +126,19 @@ the top of each file — point it at your checkout.
 
 ## Method notes / honesty
 
-- **The central geometry-specific result is the attribution-axis blindness**, not
-  a decomposition-axis count. On the decomposition axis we find only: APD is
-  faithful at every order, and the feature resolves into a small bounded set of
-  components everywhere (recon-95 ~2–7; country-only effective-component count
-  plateaus far below the budget — `figs/spd_country_only.png`). **No saturation, no
-  inflation.** A modest, bounded dimensionality difference and a phase-only
-  faithfulness ceiling remain.
-- **We withdrew two successive decomposition-axis claims as confounded:** "2× /
-  38-of-40 rank inflation" (metric-fragile), then "budget saturation" (the
-  `dominant = argmax-over-8-outputs` count is driven by readout composition, not
-  geometry). The confound-free country-only re-test shows no saturation. Lesson:
-  **component-count metrics on a shared multi-output readout are confounded** —
-  isolate the feature or stay on the attribution axis.
-- **The order-2 *gated* dissociation is a corroborated side-claim**, reproduced by
-  three independent instruments: the first-order reader (gradient+PCA), a causal
-  hidden-unit analysis (no gradients, no PCA), and the real APD/SPD solver.
-- Every place the plan met the code's reality is logged in `FINDINGS.md`
-  (Divergences) and bounded in `LIMITATIONS.md`.
+- **Two phase-specific results** (see `FINDINGS.md`): the **attribution-axis blindness**
+  (`<r,L>` 0.53 vs 0.98–0.99) and the **decomposition-axis faithfulness↔parsimony
+  tension** (under real minimality only phase loses faithfulness, 0.68–0.90; without
+  minimality phase needs a high-rank interpolation, area 0.33 ≫ ≤0.11 — `figs/spd_pareto.png`).
+- **The decomposition-axis claim was withdrawn and reframed three times** — "2×/38-of-40
+  rank inflation" (metric-fragile), "budget saturation" (readout-composition confound),
+  and "no effect / recon-95 ~6 everywhere" (measured on an *unfaithful* phase
+  decomposition). **Lesson: component-*count* metrics on a shared multi-output readout
+  are treacherous** — lead with faithfulness-under-minimality and the reconstruction-spread
+  area (with `recon_rel` reported), never a raw count. A 43-agent adversarial audit
+  (`AUDIT.md`) forced the current framing; honest caveats (not matched faithfulness,
+  metric-dependent count, n=1 construction-dependent phase model, single seeds) are in
+  FINDINGS and LIMITATIONS.
+- **The order-2 *gated* dissociation** is corroborated by three instruments (gradient+PCA
+  reader, gradient-free causal units, the real solver).
+- Methodology divergences are logged in `FINDINGS.md` and bounded in `LIMITATIONS.md`.
