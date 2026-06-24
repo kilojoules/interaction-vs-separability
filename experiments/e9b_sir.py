@@ -69,7 +69,7 @@ def main():
         R = S.readers(net, L)[S.CI]; Cact = R.T @ R / len(R)
         eva, eveca = np.linalg.eigh(Cact); phi_act = eveca[:, ::-1][:, :2]
         ang = principal_angles(phi_sir, phi_act)
-        np.savez(out/f"{key}_sir.npz", proj=proj, label=lab, eig=ev[:8],
+        np.savez(out/f"{key}_sir.npz", proj=proj, label=lab, z5=z, eig=ev[:8],
                  eig_ratio=(ev[:8]/ev[0]), angle_to_active=ang)
         print(f"{key:<7}{ev[0]:>9.3f}{ev[1]:>8.3f}{ev[2]:>8.3f}  {ev[1]/ev[0]:>9.2f}  "
               f"{ang[0]:>8.1f},{ang[1]:>7.1f}")
