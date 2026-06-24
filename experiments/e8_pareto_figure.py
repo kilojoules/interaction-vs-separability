@@ -22,16 +22,16 @@ LAB = {"phase": ("order-3 phase  (sin 3θ)", "#6a1b9a"),
 
 
 def find(model):
-    """Most-FAITHFUL pure-recon C=40 lr=1e-3 run for a code (lowest recon_rel) — NOT a hardcoded
-    step (audit M1/M4: the old code pinned the *least*-faithful phase run, recon_rel 0.254)."""
-    cands = []
+    """MATCHED-CONFIG run (C=40, 10k steps, lr=1e-3, pure-recon) for every code, so that
+    area / recon_rel / shared / isolated in one row all come from the SAME run (verify-rewrite
+    B1). Phase is faithful here (recon_rel 0.030); area is robust across steps (0.32-0.36)."""
     for p in S.glob("*.json"):
         d = json.loads(p.read_text()); c = d["config"]
-        if (c.get("model") == model and c["C"] == 40 and c["lr"] == 1e-3
+        if (c.get("model") == model and c["C"] == 40 and c["steps"] == 10000 and c["lr"] == 1e-3
                 and c["schatten"] == "none" and c["topk"] == "none" and not c["multi"]
-                and "recon_curve" in d):
-            cands.append(d)
-    return min(cands, key=lambda d: d["recon_rel"]) if cands else None
+                and "recon_curve" in d and "recon_k95_isolated" in d):
+            return d
+    return None
 
 
 def main():

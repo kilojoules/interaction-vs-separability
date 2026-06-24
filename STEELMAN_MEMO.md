@@ -1,13 +1,13 @@
 # Steelman memo — what survived (post-audit)
 
-One line per claim, at the strength a 43-agent adversarial audit (`AUDIT.md`)
+One line per claim, at the strength a multi-agent adversarial audit (`AUDIT.md`)
 licensed. This is the memo the proposal is written from.
 
 | claim | verdict | one-line |
 |---|---|---|
 | **Attribution-axis blindness** (phase `<r,L>` 0.53 vs poly 0.98 / xor 0.99) | **SURVIVES-WITH-CAVEAT** | Gap robust across seeds, ≫ any CI. But the recoverable controls are ones the readout *linearizes in L* (fixed probe 0.95/0.91), and the only blind model is dedicated-by-construction — so it's "phase blind while linearized degree-3 codes are not," not confound-free. |
-| **Faithfulness↔parsimony tension** (phase is the decomposition-axis outlier) | **HOLDS, REVISED** | Two-sided and confound-free *directionally*: under the real APD minimality objective only phase loses faithfulness (0.68–0.90 vs 0.98–0.99); without minimality phase reaches faithfulness only via a high-rank interpolation (area 0.33 vs ≤0.11). NOT at matched faithfulness; count is metric-dependent; single phase model. |
-| **Phase faithfulness ceiling** | **SURVIVES-WITH-CAVEAT** | A real phase-specific *difficulty*, not a "wall": reaches ~0.96–0.977 with a careful, parsimony-free, seed-fragile recipe (lr=3e-3 seeds 0.85/0.77/0.64). Earlier "unmovable" was wrong. |
+| **Faithfulness↔parsimony tension** (phase is the decomposition-axis outlier) | **HOLDS, REVISED** | Two-sided and confound-free *directionally*: under the real APD minimality objective only phase loses faithfulness (0.68–0.90 vs 0.98–0.99); without minimality phase reaches faithfulness only via a high-rank interpolation (area 0.33 vs ≤0.14). NOT at matched faithfulness; count is metric-dependent; single phase model. |
+| **Phase faithfulness ceiling** | **SURVIVES-WITH-CAVEAT** | A real phase-specific *difficulty*, not a "wall": reaches ~0.96–0.977 with a careful, parsimony-free, seed-fragile recipe (lr=3e-3 seeds 0.85/0.76/0.64). Earlier "unmovable" was wrong. |
 | **Order-2 gated = separable only conditional on interacting features** | **SURVIVES** | Reproduced gradient-free / PCA-free (gap 0.37); attenuated on a held-out gate. |
 | ~~Rank inflation (2×/38-of-40)~~ → ~~Budget saturation~~ → ~~"no effect, recon-95 ~6"~~ | **ALL WITHDRAWN** | Metric-fragile → readout-composition-confounded → measured on unfaithful phase. Replaced by the faithfulness-parsimony tension. |
 
@@ -32,7 +32,7 @@ licensed. This is the memo the proposal is written from.
 > readout linearizes in L), and (2) it exhibits a **faithfulness↔parsimony tension** —
 > under the real APD minimality objective it alone loses reconstruction faithfulness
 > (0.68–0.90 vs 0.98–0.99), and without minimality it reaches faithfulness only through a
-> high-rank, many-component interpolation (reconstruction-spread area ~0.33 vs ≤0.11). Both
+> high-rank, many-component interpolation (reconstruction-spread area ~0.33 vs ≤0.14). Both
 > stem from a smooth nonlinearity resisting *sparse linear decomposition* and *first-order
 > gradients* alike. This is a statement about cost/visibility, **not** impossibility, and it
 > is demonstrated on a single, construction-dependent phase model at toy scale.

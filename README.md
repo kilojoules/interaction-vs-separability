@@ -24,8 +24,9 @@ machinery lives entirely there.
 > A feature's **encoding geometry** affects how cleanly its readout decomposes, and a
 > **smooth periodic (phase) code** is the unique outlier on two axes:
 > 1. **Attribution axis (blindness, SURVIVES-WITH-CAVEAT):** first-order attribution
->    `<r,L>` is blind to the phase code (country AUC **0.53**) but recovers the
->    polynomial (**0.98**) and gated/XOR (**0.99**) codes of the *same degree*. Caveat:
+>    `<r,L>` is blind to the phase code — its first-order reconstruction reaches country
+>    AUC only **0.53** (vs the model's 0.98) — but recovers the polynomial (**0.98**) and
+>    gated/XOR (**0.99**) codes of the *same degree*. Caveat:
 >    those controls are recoverable because the readout **linearizes them in L** (fixed
 >    probe 0.95/0.91), and the only blind model is **dedicated by construction** — so it's
 >    "phase blind while linearized degree-3 codes are not," not confound-free.
@@ -33,7 +34,7 @@ machinery lives entirely there.
 >    minimality objective** only phase loses faithfulness (country AUC **0.68–0.90** vs
 >    **0.98–0.99**); **without** minimality, phase reaches faithfulness only via a
 >    high-rank, many-component interpolation (reconstruction-spread area **0.33** vs
->    ≤0.11). NOT measured at matched faithfulness; the count is metric-dependent; phase
+>    ≤0.14). NOT measured at matched faithfulness; the count is metric-dependent; phase
 >    is the outlier but the fine ordering among non-phase codes is not robust.
 >
 > Both stem from a smooth nonlinearity resisting *sparse linear decomposition* and
@@ -129,13 +130,13 @@ the top of each file — point it at your checkout.
 - **Two phase-specific results** (see `FINDINGS.md`): the **attribution-axis blindness**
   (`<r,L>` 0.53 vs 0.98–0.99) and the **decomposition-axis faithfulness↔parsimony
   tension** (under real minimality only phase loses faithfulness, 0.68–0.90; without
-  minimality phase needs a high-rank interpolation, area 0.33 ≫ ≤0.11 — `figs/spd_pareto.png`).
+  minimality phase needs a high-rank interpolation, area 0.33 ≫ ≤0.14 — `figs/spd_pareto.png`).
 - **The decomposition-axis claim was withdrawn and reframed three times** — "2×/38-of-40
   rank inflation" (metric-fragile), "budget saturation" (readout-composition confound),
   and "no effect / recon-95 ~6 everywhere" (measured on an *unfaithful* phase
   decomposition). **Lesson: component-*count* metrics on a shared multi-output readout
   are treacherous** — lead with faithfulness-under-minimality and the reconstruction-spread
-  area (with `recon_rel` reported), never a raw count. A 43-agent adversarial audit
+  area (with `recon_rel` reported), never a raw count. A multi-agent adversarial audit
   (`AUDIT.md`) forced the current framing; honest caveats (not matched faithfulness,
   metric-dependent count, n=1 construction-dependent phase model, single seeds) are in
   FINDINGS and LIMITATIONS.

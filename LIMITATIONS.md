@@ -33,7 +33,7 @@ by the shared full-rank `mlp_in` (isolating the country projection drops phase 3
 is the outlier on every metric; the fine ordering among non-phase codes is not robust.
 
 **The faithfulness "ceiling" is fragility, not a wall.** Phase reaches AUC ~0.96–0.977
-under a careful, parsimony-free recipe, but is seed-unstable (lr=3e-3 seeds 0.85/0.77/0.64)
+under a careful, parsimony-free recipe, but is seed-unstable (lr=3e-3 seeds 0.85/0.76/0.64)
 and lr-fragile. An earlier "unmovable ceiling" claim was wrong and is withdrawn.
 
 **Mostly single-seed; AUC noise is real.** Most numbers are single-seed (areas checked on

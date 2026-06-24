@@ -3,7 +3,7 @@
 Does a feature's **encoding geometry** affect how cleanly a small readout decomposes?
 Toy scale, ground truth known. Country is encoded several ways at the analyzed layer
 **L**, and we ask what survives honest, adversarial scrutiny. This document states
-each claim at the strength a **43-agent adversarial audit** (`AUDIT.md`) licensed;
+each claim at the strength a **multi-agent adversarial audit** (`AUDIT.md`) licensed;
 the revision history (and what we withdrew) is in the last section, because the
 component-count story in particular took four tries to get right.
 
@@ -16,9 +16,10 @@ order-3 **polynomial** `a³−3ab²` (from-scratch `e2b`); order-3 **gated/XOR**
 ## Headline (audited)
 
 1. **Attribution-axis blindness — SURVIVES-WITH-CAVEAT.** First-order attribution
-   `<r,L> = ∂z/∂L · L` is blind to the **phase** code (country AUC **0.53**) but
-   recovers the polynomial (**0.98**) and gated/XOR (**0.99**) codes of the *same
-   degree*. The ~0.45 gap is robust across seeds and ≫ any sampling CI. Caveat: the
+   `<r,L> = ∂z/∂L · L` is blind to the **phase** code — its first-order reconstruction
+   reaches country AUC only **0.53** (vs the model's 0.98) — but *recovers* the
+   polynomial (**0.98**) and gated/XOR (**0.99**) codes of the *same degree*. The ~0.45
+   gap in first-order recoverability is robust across seeds and ≫ any sampling CI. Caveat: the
    recoverable controls are ones the trained network **linearizes in L**, and the
    only blind model is **dedicated by construction** — so it is "phase blind while
    degree-3 codes the readout linearizes are not," not a clean geometry-vs-everything
@@ -28,7 +29,7 @@ order-3 **polynomial** `a³−3ab²` (from-scratch `e2b`); order-3 **gated/XOR**
    only the phase code loses faithfulness: country AUC **0.90→0.68** vs gate/poly/XOR
    **0.98–0.99**. (b) **Without** minimality (pure reconstruction), phase reaches
    faithfulness (~0.96–0.98) only via a **high-rank, many-component interpolation**:
-   reconstruction-spread area **0.33** vs gate 0.11, poly 0.04, xor 0.01. Phase is the
+   reconstruction-spread area **0.33** vs gate 0.14, poly 0.05, xor 0.02. Phase is the
    outlier on *every* decomposition metric; the fine ordering among the non-phase
    codes is metric-dependent. This **replaces** an earlier (withdrawn) "saturation"
    claim and an even earlier (withdrawn) "no effect" claim — see "What we withdrew."
@@ -52,8 +53,7 @@ third-order codes, matched accuracy:
 
 - **The contrast is real but not "geometry vs everything."** The polynomial/XOR are
   first-order-recoverable *because the trained network linearizes them in L* (fixed
-  probe 0.95 / 0.91) — they are genuinely nonlinear in the raw embedding (0.69 /
-  0.53) but the readout's input represents them ~linearly. So the codes are matched
+  probe 0.95 / 0.91) — they are genuinely nonlinear in the raw embedding (0.69 / 0.53, audit probe) but the readout's input represents them ~linearly. So the codes are matched
   on *degree* but **not** on L-nonlinearity, which is the variable that actually drives
   `<r,L>` recoverability. Honest statement: *phase is blind while degree-3 codes the
   network linearizes in L are not.*
@@ -86,14 +86,15 @@ Phase is the only code that cannot be both **minimal** and **faithful**.
 **(b) Without minimality (pure reconstruction), phase reaches faithfulness only via a
 many-component, high-rank interpolation.** The recon-curve (country AUC vs fraction of
 components kept, greedy by causal effect) crawls for phase and jumps for the others
-(`figs/spd_pareto.png`); the area below each code's own ceiling:
+(`figs/spd_pareto.png`); the area below each code's own ceiling. **All four cells in
+each row are from one matched-config run** (C=40, 10k steps, lr=1e-3, pure-recon):
 
 | code | faithfulness | recon_rel | reconstruction-spread **area** | recon-95 (shared / isolated) |
 |---|---|---|---|---|
 | **phase** `sin3θ` | 0.977 | 0.030 | **0.334** | 34 / **13** |
-| gate `food⊕sent` | 0.994 | 0.0003 | 0.107 | 15 / 1 |
-| poly `a³−3ab²` | 0.979 | 0.0002 | 0.037 | 7 / 7 |
-| XOR `a⊕b⊕c` | 0.988 | 0.0009 | 0.013 | 6 / 4 |
+| gate `food⊕sent` | 0.994 | 0.001 | 0.139 | 17 / 1 |
+| poly `a³−3ab²` | 0.979 | 0.000 | 0.045 | 7 / 7 |
+| XOR `a⊕b⊕c` | 0.988 | 0.001 | 0.021 | 6 / 4 |
 
 **Caveats (all from the audit, all material):**
 - **Not at matched faithfulness.** Even at its best, phase has `recon_rel ≈ 0.03` vs the
@@ -129,7 +130,7 @@ A 21-config stress sweep reaches phase AUC **~0.96–0.977** (pure reconstructio
 lr=1e-3) — essentially the polynomial's 0.979. The "best 0.977" is an *undertrained*
 peak (2k steps); converged is ~0.957–0.961. What persists is a real **phase-specific
 difficulty**, not a wall: it needs the parsimony-free recipe, is **seed-unstable**
-(lr=3e-3 seeds: 0.85 / 0.77 / 0.64), lr-fragile (1e-3 → 0.96; 1e-2 → 0.65), and even at
+(lr=3e-3 seeds: 0.85 / 0.76 / 0.64), lr-fragile (1e-3 → 0.96; 1e-2 → 0.65), and even at
 its best has `recon_rel` ~10× the others. That difficulty *is* the faithfulness-parsimony
 tension above.
 
@@ -163,9 +164,10 @@ against faithfulness directly and under the real minimality objective.
   (attribution-axis) metrics.
 - **`model_m2_xor.pt` excluded** (composite gated construction, not a standard `Head`).
 - **Faithfulness is feature-specific.** The 8-output aggregate `recon_rel` (~0.8% for the
-  cubic Task-1 readout) is *not* the country faithfulness — the country logit is ~2% of
-  total output variance; its single-output `recon_rel` is 0.05–0.25. Cite the country-only
-  number.
+  constructed-pinwheel multi-output readout) is *not* the country faithfulness — the
+  country logit is ~2% of total output variance, and its single-output `recon_rel` for
+  that readout is ~0.40. (Separately, the country-only phase *stress* runs reach
+  `recon_rel` 0.03–0.25.) Cite the country-specific number, not the aggregate.
 - **SGD cannot reach a clean periodic high-order code from scratch** (order-3 `sin3θ`:
   0.795; order-4 `sin4θ`: 0.565). This bounds all phase-regime claims to the construction.
 
